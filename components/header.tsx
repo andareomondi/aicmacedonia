@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { NotificationBell } from "@/components/notification-bell"
 import { Menu, X, Church } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -34,7 +33,7 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg" : "bg-transparent"
+        scrolled ? "bg-white/95 backdrop-blur-sm shadow-lg" : "bg-transparent"
       }`}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,7 +52,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
               >
                 {item.name}
               </Link>
@@ -63,7 +62,6 @@ export function Header() {
           {/* Right side items */}
           <div className="flex items-center space-x-4">
             <NotificationBell />
-            <ThemeToggle />
             <div className="hidden md:flex space-x-2">
               <Button variant="ghost" asChild>
                 <Link href="/login">Login</Link>
@@ -90,14 +88,14 @@ export function Header() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-gray-200 dark:border-gray-700"
+              className="md:hidden border-t border-gray-200"
             >
               <div className="py-4 space-y-2">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.name}
