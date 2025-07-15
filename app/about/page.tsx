@@ -24,7 +24,7 @@ export default function AboutPage() {
                       <MapPin className="h-8 w-8 text-pink-500" />
                       <div>
                         <h3 className="font-semibold text-lg">Location</h3>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className="text-gray-600">
                           Greatwall, Athiriver, Kenya
                           <br />
                           Next to Mavuno Church
@@ -40,7 +40,7 @@ export default function AboutPage() {
                       <Clock className="h-8 w-8 text-blue-500" />
                       <div>
                         <h3 className="font-semibold text-lg">Service Times</h3>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className="text-gray-600">
                           Sunday Service: 9:00 AM - 12:00 PM
                           <br />
                           CED Classes: 1:00 PM - 3:00 PM
@@ -56,7 +56,7 @@ export default function AboutPage() {
                       <Phone className="h-8 w-8 text-pink-500" />
                       <div>
                         <h3 className="font-semibold text-lg">Contact</h3>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className="text-gray-600">
                           Phone: +254 700 000 000
                           <br />
                           Email: info@aicmacedonia.org
