@@ -6,6 +6,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { BackgroundAnimation } from "@/components/background-animation"
 import { AuthGuard } from "@/components/auth-guard"
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -33,6 +34,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <PWAInstallPrompt />
           <Toaster />
         </AuthGuard>
       </body>

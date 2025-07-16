@@ -3,103 +3,102 @@
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Home, Search, ArrowLeft, Church } from "lucide-react"
+import { Home, Search, ArrowLeft, FileQuestion } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function NotFound() {
+  const router = useRouter()
+
+  const quickLinks = [
+    { name: "Home", href: "/", icon: Home },
+    { name: "Sermons", href: "/sermons", icon: FileQuestion },
+    { name: "Events", href: "/events", icon: Search },
+    { name: "About", href: "/about", icon: FileQuestion },
+  ]
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
         className="w-full max-w-lg"
       >
-        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="shadow-2xl border-blue-200">
           <CardContent className="p-8 text-center">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2, type: "spring", stiffness: 200 }}
-              className="flex justify-center mb-6"
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="mb-6"
             >
-              <div className="relative">
-                <div className="p-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full">
-                  <Church className="h-16 w-16 text-blue-600" />
-                </div>
-                <div className="absolute -bottom-2 -right-2 p-2 bg-red-100 rounded-full">
-                  <Search className="h-6 w-6 text-red-500" />
-                </div>
+              <div className="text-8xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                404
               </div>
             </motion.div>
 
-            <motion.div
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ delay: 0.3 }}
+              className="text-2xl font-bold text-gray-900 mb-4"
             >
-              <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                404
-              </h1>
-              <h2 className="text-2xl font-semibold mb-4 text-gray-800">Page Not Found</h2>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                The page you're looking for seems to have wandered off. Don't worry, even the best shepherds sometimes
-                lose a sheep! Let's get you back to familiar ground.
-              </p>
-            </motion.div>
+              Page Not Found
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-gray-600 mb-8"
+            >
+              Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or you entered the
+              wrong URL.
+            </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ delay: 0.5 }}
               className="space-y-4"
             >
-              <Button
-                asChild
-                size="lg"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg"
-              >
-                <Link href="/">
-                  <Home className="h-5 w-5 mr-2" />
-                  Return to Homepage
+              <div className="flex gap-3">
+                <Link href="/" className="flex-1">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Home className="h-4 w-4 mr-2" />
+                    Go Home
+                  </Button>
                 </Link>
-              </Button>
 
-              <Button
-                onClick={() => window.history.back()}
-                variant="outline"
-                size="lg"
-                className="w-full bg-transparent border-gray-300 hover:bg-gray-50"
-              >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                Go Back
-              </Button>
+                <Button variant="outline" onClick={() => router.back()} className="flex-1">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Go Back
+                </Button>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-500 mb-4">Or try one of these pages:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {quickLinks.map((link) => (
+                    <Link key={link.name} href={link.href}>
+                      <Button variant="ghost" size="sm" className="w-full">
+                        <link.icon className="h-4 w-4 mr-2" />
+                        {link.name}
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ delay: 0.6 }}
               className="mt-8 pt-6 border-t border-gray-200"
             >
-              <p className="text-sm text-gray-500 mb-4">Popular pages you might be looking for:</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                <Link href="/about" className="text-blue-600 hover:text-blue-800 text-sm underline">
-                  About Us
-                </Link>
-                <span className="text-gray-300">•</span>
-                <Link href="/sermons" className="text-blue-600 hover:text-blue-800 text-sm underline">
-                  Sermons
-                </Link>
-                <span className="text-gray-300">•</span>
-                <Link href="/events" className="text-blue-600 hover:text-blue-800 text-sm underline">
-                  Events
-                </Link>
-                <span className="text-gray-300">•</span>
-                <Link href="/gallery" className="text-blue-600 hover:text-blue-800 text-sm underline">
-                  Gallery
-                </Link>
-              </div>
+              <p className="text-xs text-gray-400">AIC Macedonia - African Inland Church</p>
             </motion.div>
           </CardContent>
         </Card>

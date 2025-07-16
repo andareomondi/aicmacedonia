@@ -79,8 +79,25 @@ export default function AdminDashboard() {
         supabase.from("notifications").select("id", { count: "exact" }),
       ])
 
-      // Get user statistics
-      const { data: authUsers } = await supabase.auth.admin.listUsers()
+      // Get user statistics from auth.users
+      const { data: authUsers, error } = await supabase.auth.admin.listUsers()
+
+      if (error) {
+        console.error("Error fetching users:", error)
+        // Fallback to basic stats without user counts
+        setStats({
+          sermons: sermons.count || 0,
+          events: events.count || 0,
+          gallery: gallery.count || 0,
+          cedGroups: cedGroups.count || 0,
+          choirs: choirs.count || 0,
+          notifications: notifications.count || 0,
+          totalMembers: 0,
+          adminUsers: 0,
+        })
+        return
+      }
+
       const totalMembers = authUsers?.users?.length || 0
       const adminUsers =
         authUsers?.users?.filter(
@@ -163,14 +180,14 @@ export default function AdminDashboard() {
       count: stats.totalMembers,
       icon: UserCheck,
       color: "bg-indigo-500",
-      href: "#",
+      href: "/admin/users",
     },
     {
       title: "Admin Users",
       count: stats.adminUsers,
       icon: Shield,
       color: "bg-gray-500",
-      href: "#",
+      href: "/admin/users?filter=admin",
     },
   ]
 
@@ -204,24 +221,8 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
             >
-              {card.href !== "#" ? (
-                <Link href={card.href}>
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">{card.title}</p>
-                          <p className="text-3xl font-bold">{card.count}</p>
-                        </div>
-                        <div className={`p-3 rounded-full ${card.color}`}>
-                          <card.icon className="h-6 w-6 text-white" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ) : (
-                <Card>
+              <Link href={card.href}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -234,7 +235,7 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              </Link>
             </motion.div>
           ))}
         </div>
