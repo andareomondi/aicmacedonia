@@ -1,13 +1,16 @@
 "use client"
 
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Users, Bell, Music, Calendar, Group, ImageIcon, BookOpen } from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Users, FileText, Calendar, ImageIcon, Music, Plus, Bell, Shield, UserCheck } from "lucide-react"
-import { supabase } from "@/lib/supabase-client"
-import Link from "next/link"
 
 interface DashboardStats {
   sermons: number
@@ -20,9 +23,89 @@ interface DashboardStats {
   adminUsers: number
 }
 
-export default function AdminDashboard() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+export default async function AdminDashboardPage() {
+  const cookieStore = cookies()
+  const supabaseClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (name: string) => cookieStore.get(name)?.value,
+      },
+    },
+  )
+
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  // Fetch user metadata to check for admin role
+  const { data: userMetadata, error: metadataError } = await supabaseClient
+    .from("users") // Assuming you have a 'users' table storing user metadata
+    .select("user_metadata")
+    .eq("id", user.id)
+    .single()
+
+  if (metadataError || userMetadata?.user_metadata?.role !== "admin") {
+    redirect("/admin/unauthorized")
+  }
+
+  // Fetch total registered members
+  const { count: totalMembers, error: membersError } = await supabaseClient
+    .from("users")
+    .select("*", { count: "exact" })
+
+  // Fetch total admin users
+  const { data: adminUsersData, error: adminError } = await supabaseClient
+    .from("users")
+    .select("user_metadata")
+    .filter("user_metadata->>role", "eq", "admin")
+
+  const totalAdminUsers = adminUsersData?.length || 0
+
+  const adminSections = [
+    {
+      title: "Notifications",
+      description: "Manage church announcements and alerts.",
+      icon: <Bell className="h-6 w-6 text-blue-500" />,
+      href: "/admin/notifications",
+    },
+    {
+      title: "Choirs",
+      description: "Oversee choir groups, members, and schedules.",
+      icon: <Music className="h-6 w-6 text-green-500" />,
+      href: "/admin/choirs",
+    },
+    {
+      title: "Events",
+      description: "Handle event listings, dates, and details.",
+      icon: <Calendar className="h-6 w-6 text-purple-500" />,
+      href: "/admin/events",
+    },
+    {
+      title: "CED Groups",
+      description: "Manage Christian Education Department groups.",
+      icon: <Group className="h-6 w-6 text-yellow-500" />,
+      href: "/admin/ced-groups",
+    },
+    {
+      title: "Gallery",
+      description: "Upload and manage church photos and videos.",
+      icon: <ImageIcon className="h-6 w-6 text-red-500" />,
+      href: "/admin/gallery",
+    },
+    {
+      title: "Sermons",
+      description: "Manage sermon audio, video, and notes.",
+      icon: <BookOpen className="h-6 w-6 text-indigo-500" />,
+      href: "/admin/sermons",
+    },
+  ]
+
   const [stats, setStats] = useState<DashboardStats>({
     sermons: 0,
     events: 0,
@@ -30,61 +113,54 @@ export default function AdminDashboard() {
     cedGroups: 0,
     choirs: 0,
     notifications: 0,
-    totalMembers: 0,
-    adminUsers: 0,
+    totalMembers: totalMembers ?? 0,
+    adminUsers: totalAdminUsers,
   })
+
   const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [userClient, setUserClient] = useState<any>(null)
 
   useEffect(() => {
-    checkUser()
-    fetchStats()
-  }, [])
+    const checkUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
 
-  const checkUser = async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+        if (!user) {
+          router.push("/login")
+          return
+        }
 
-      if (!user) {
+        // Check if user has admin role
+        const isAdmin = user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin"
+
+        if (!isAdmin) {
+          router.push("/admin/unauthorized")
+          return
+        }
+
+        setUserClient(user)
+      } catch (error) {
+        console.error("Error checking user:", error)
         router.push("/login")
-        return
+      } finally {
+        setLoading(false)
       }
-
-      // Check if user has admin role
-      const isAdmin = user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin"
-
-      if (!isAdmin) {
-        router.push("/admin/unauthorized")
-        return
-      }
-
-      setUser(user)
-    } catch (error) {
-      console.error("Error checking user:", error)
-      router.push("/login")
-    } finally {
-      setLoading(false)
     }
-  }
 
-  const fetchStats = async () => {
-    try {
-      const [sermons, events, gallery, cedGroups, choirs, notifications] = await Promise.all([
-        supabase.from("sermons").select("id", { count: "exact" }),
-        supabase.from("events").select("id", { count: "exact" }),
-        supabase.from("gallery").select("id", { count: "exact" }),
-        supabase.from("ced_groups").select("id", { count: "exact" }),
-        supabase.from("choirs").select("id", { count: "exact" }),
-        supabase.from("notifications").select("id", { count: "exact" }),
-      ])
+    const fetchStats = async () => {
+      try {
+        const [sermons, events, gallery, cedGroups, choirs, notifications] = await Promise.all([
+          supabase.from("sermons").select("id", { count: "exact" }),
+          supabase.from("events").select("id", { count: "exact" }),
+          supabase.from("gallery").select("id", { count: "exact" }),
+          supabase.from("ced_groups").select("id", { count: "exact" }),
+          supabase.from("choirs").select("id", { count: "exact" }),
+          supabase.from("notifications").select("id", { count: "exact" }),
+        ])
 
-      // Get user statistics from auth.users
-      const { data: authUsers, error } = await supabase.auth.admin.listUsers()
-
-      if (error) {
-        console.error("Error fetching users:", error)
-        // Fallback to basic stats without user counts
         setStats({
           sermons: sermons.count || 0,
           events: events.count || 0,
@@ -92,32 +168,17 @@ export default function AdminDashboard() {
           cedGroups: cedGroups.count || 0,
           choirs: choirs.count || 0,
           notifications: notifications.count || 0,
-          totalMembers: 0,
-          adminUsers: 0,
+          totalMembers: totalMembers ?? 0,
+          adminUsers: totalAdminUsers,
         })
-        return
+      } catch (error) {
+        console.error("Error fetching stats:", error)
       }
-
-      const totalMembers = authUsers?.users?.length || 0
-      const adminUsers =
-        authUsers?.users?.filter(
-          (user) => user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin",
-        ).length || 0
-
-      setStats({
-        sermons: sermons.count || 0,
-        events: events.count || 0,
-        gallery: gallery.count || 0,
-        cedGroups: cedGroups.count || 0,
-        choirs: choirs.count || 0,
-        notifications: notifications.count || 0,
-        totalMembers,
-        adminUsers,
-      })
-    } catch (error) {
-      console.error("Error fetching stats:", error)
     }
-  }
+
+    checkUser()
+    fetchStats()
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -131,65 +192,6 @@ export default function AdminDashboard() {
       </div>
     )
   }
-
-  const dashboardCards = [
-    {
-      title: "Sermons",
-      count: stats.sermons,
-      icon: FileText,
-      color: "bg-blue-500",
-      href: "/admin/sermons",
-    },
-    {
-      title: "Events",
-      count: stats.events,
-      icon: Calendar,
-      color: "bg-green-500",
-      href: "/admin/events",
-    },
-    {
-      title: "Gallery",
-      count: stats.gallery,
-      icon: ImageIcon,
-      color: "bg-purple-500",
-      href: "/admin/gallery",
-    },
-    {
-      title: "CED Groups",
-      count: stats.cedGroups,
-      icon: Users,
-      color: "bg-pink-500",
-      href: "/admin/ced-groups",
-    },
-    {
-      title: "Choirs",
-      count: stats.choirs,
-      icon: Music,
-      color: "bg-orange-500",
-      href: "/admin/choirs",
-    },
-    {
-      title: "Notifications",
-      count: stats.notifications,
-      icon: Bell,
-      color: "bg-red-500",
-      href: "/admin/notifications",
-    },
-    {
-      title: "Total Members",
-      count: stats.totalMembers,
-      icon: UserCheck,
-      color: "bg-indigo-500",
-      href: "/admin/users",
-    },
-    {
-      title: "Admin Users",
-      count: stats.adminUsers,
-      icon: Shield,
-      color: "bg-gray-500",
-      href: "/admin/users?filter=admin",
-    },
-  ]
 
   return (
     <div className="pt-20 min-h-screen bg-gradient-to-br from-pink-50 to-blue-50">
@@ -205,7 +207,7 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
               Admin Dashboard
             </h1>
-            <p className="text-gray-600 mt-2">Welcome back, {user?.email}</p>
+            <p className="text-gray-600 mt-2">Welcome back, {userClient?.email}</p>
           </div>
           <Button onClick={handleSignOut} variant="outline">
             Sign Out
@@ -214,30 +216,33 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {dashboardCards.map((card, index) => (
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-            >
-              <Link href={card.href}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">{card.title}</p>
-                        <p className="text-3xl font-bold">{card.count}</p>
-                      </div>
-                      <div className={`p-3 rounded-full ${card.color}`}>
-                        <card.icon className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
+          <Link href="/admin/users" passHref>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalMembers}</div>
+                <p className="text-xs text-muted-foreground">Click to view all users</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/admin/users?role=admin" passHref>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.adminUsers}</div>
+                <p className="text-xs text-muted-foreground">Click to view admin users</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Add more summary cards here if needed */}
         </div>
 
         {/* Quick Actions */}
@@ -246,51 +251,22 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                <Link href="/admin/sermons/new">
-                  <Button className="w-full bg-blue-500 hover:bg-blue-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Sermon
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {adminSections.map((section) => (
+              <Card key={section.title} className="flex flex-col">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  {section.icon}
+                  <CardTitle className="text-xl font-semibold">{section.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-muted-foreground mb-4">{section.description}</p>
+                  <Button asChild className="w-full">
+                    <Link href={section.href}>Manage {section.title}</Link>
                   </Button>
-                </Link>
-                <Link href="/admin/events/new">
-                  <Button className="w-full bg-green-500 hover:bg-green-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Event
-                  </Button>
-                </Link>
-                <Link href="/admin/gallery/new">
-                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Image
-                  </Button>
-                </Link>
-                <Link href="/admin/ced-groups/new">
-                  <Button className="w-full bg-pink-500 hover:bg-pink-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add CED Group
-                  </Button>
-                </Link>
-                <Link href="/admin/choirs/new">
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Choir
-                  </Button>
-                </Link>
-                <Link href="/admin/notifications/new">
-                  <Button className="w-full bg-red-500 hover:bg-red-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Notification
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </motion.div>
       </div>
     </div>

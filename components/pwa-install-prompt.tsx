@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, X } from "lucide-react"
 
+/* ------------------------------------------------------------------
+   Types
+-------------------------------------------------------------------*/
 declare global {
   interface WindowEventMap {
     beforeinstallprompt: BeforeInstallPromptEvent
@@ -14,76 +17,80 @@ declare global {
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
   readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>
-  prompt: () => Promise<void>
+  prompt(): Promise<void>
 }
 
-const LOCAL_KEY = "aic_pwa_prompt_dismissed_at"
+/* ------------------------------------------------------------------
+   Component
+-------------------------------------------------------------------*/
+const LOCAL_STORAGE_KEY = "aic_pwa_prompt_dismissed_at"
+const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 export function PWAInstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
-  const [visible, setVisible] = useState(false)
+  const [open, setOpen] = useState(false)
 
-  /* Capture beforeinstallprompt */
+  /* Capture `beforeinstallprompt` and decide whether to show the banner */
   useEffect(() => {
     const handler = (e: BeforeInstallPromptEvent) => {
-      // Chrome fires this event even if the app is already installed; guard against that
-      if ((window as any).matchMedia("(display-mode: standalone)").matches) return
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+      if (isStandalone) return
 
-      // Respect a 7-day cool-down
-      const ts = localStorage.getItem(LOCAL_KEY)
-      if (ts && Date.now() - Number(ts) < 7 * 24 * 60 * 60 * 1000) return
+      const lastDismissed = Number(localStorage.getItem(LOCAL_STORAGE_KEY) ?? 0)
+      if (Date.now() - lastDismissed < COOLDOWN_MS) return
 
       e.preventDefault()
       setDeferred(e)
-      setVisible(true)
+      setOpen(true)
     }
+
     window.addEventListener("beforeinstallprompt", handler)
     return () => window.removeEventListener("beforeinstallprompt", handler)
   }, [])
 
+  /* Helpers */
   const install = async () => {
     if (!deferred) return
-    deferred.prompt()
-    const choice = await deferred.userChoice
-    if (choice.outcome === "accepted") {
-      setVisible(false)
-      setDeferred(null)
-    }
+    await deferred.prompt()
+    await deferred.userChoice
+    closeBanner()
   }
 
-  const dismiss = () => {
-    setVisible(false)
-    localStorage.setItem(LOCAL_KEY, String(Date.now()))
+  const closeBanner = () => {
+    setOpen(false)
+    setDeferred(null)
+    localStorage.setItem(LOCAL_STORAGE_KEY, String(Date.now()))
   }
 
-  if (!visible) return null
+  if (!open || !deferred) return null
 
   return (
-    <div className="fixed bottom-6 inset-x-0 flex justify-center z-50">
-      <Card className="w-[90%] sm:w-96 shadow-xl border-0 bg-white/90 backdrop-blur-md">
-        <CardContent className="p-4 flex items-start gap-4">
-          <Download className="h-8 w-8 text-blue-600 shrink-0" />
-          <div className="flex-1">
-            <h3 className="font-semibold mb-1">Install AIC Macedonia</h3>
-            <p className="text-sm text-gray-600">
-              Get a faster, full-screen experience by adding this app to your home screen.
-            </p>
-            <div className="mt-3 flex gap-2">
-              <Button size="sm" onClick={install} className="bg-blue-600 hover:bg-blue-700 text-white">
-                Install
-              </Button>
-              <Button size="sm" variant="outline" onClick={dismiss}>
-                Dismiss
-              </Button>
-            </div>
+    <div className="fixed inset-x-4 bottom-6 z-50 flex justify-center">
+      <Card className="w-full max-w-md shadow-xl backdrop-blur-sm bg-white/90">
+        <CardHeader className="pb-2 flex items-start gap-3">
+          <Download className="h-5 w-5 text-blue-600 shrink-0" />
+          <div>
+            <CardTitle className="text-base">Install AIC Macedonia</CardTitle>
+            <CardDescription className="text-gray-600">
+              Add the app to your home screen for a faster, full-screen experience.
+            </CardDescription>
           </div>
           <button
-            aria-label="Dismiss"
-            onClick={dismiss}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={closeBanner}
+            aria-label="Dismiss install prompt"
+            className="ml-auto text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
+        </CardHeader>
+
+        <CardContent className="pt-0 pb-4 flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={closeBanner}>
+            Maybe later
+          </Button>
+          <Button size="sm" onClick={install} className="bg-blue-600 hover:bg-blue-700 text-white">
+            Install
+          </Button>
         </CardContent>
       </Card>
     </div>
