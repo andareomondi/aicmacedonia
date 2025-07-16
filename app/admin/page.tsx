@@ -1,9 +1,11 @@
 "use client"
 
+import Link from "next/link"
+
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import Link from "next/link"
+import AdminDashboardShell from "@/components/admin-dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, Bell, Music, Calendar, Group, ImageIcon, BookOpen } from "lucide-react"
@@ -194,81 +196,92 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-gradient-to-br from-pink-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex justify-between items-center mb-8"
-        >
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-600 mt-2">Welcome back, {userClient?.email}</p>
-          </div>
-          <Button onClick={handleSignOut} variant="outline">
-            Sign Out
-          </Button>
-        </motion.div>
+    <AdminDashboardShell
+      userEmail={userClient?.email ?? ""}
+      stats={{
+        sermons: stats.sermons,
+        events: stats.events,
+        gallery: stats.gallery,
+        totalMembers: stats.totalMembers,
+        adminUsers: stats.adminUsers,
+      }}
+    >
+      <div className="pt-20 min-h-screen bg-gradient-to-br from-pink-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex justify-between items-center mb-8"
+          >
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-gray-600 mt-2">Welcome back, {userClient?.email}</p>
+            </div>
+            <Button onClick={handleSignOut} variant="outline">
+              Sign Out
+            </Button>
+          </motion.div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/admin/users" passHref>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalMembers}</div>
-                <p className="text-xs text-muted-foreground">Click to view all users</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/admin/users?role=admin" passHref>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.adminUsers}</div>
-                <p className="text-xs text-muted-foreground">Click to view admin users</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Add more summary cards here if needed */}
-        </div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {adminSections.map((section) => (
-              <Card key={section.title} className="flex flex-col">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  {section.icon}
-                  <CardTitle className="text-xl font-semibold">{section.title}</CardTitle>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Link href="/admin/users" passHref>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground mb-4">{section.description}</p>
-                  <Button asChild className="w-full">
-                    <Link href={section.href}>Manage {section.title}</Link>
-                  </Button>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalMembers}</div>
+                  <p className="text-xs text-muted-foreground">Click to view all users</p>
                 </CardContent>
               </Card>
-            ))}
+            </Link>
+
+            <Link href="/admin/users?role=admin" passHref>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.adminUsers}</div>
+                  <p className="text-xs text-muted-foreground">Click to view admin users</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Add more summary cards here if needed */}
           </div>
-        </motion.div>
+
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {adminSections.map((section) => (
+                <Card key={section.title} className="flex flex-col">
+                  <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                    {section.icon}
+                    <CardTitle className="text-xl font-semibold">{section.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-muted-foreground mb-4">{section.description}</p>
+                    <Button asChild className="w-full">
+                      <Link href={section.href}>Manage {section.title}</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </AdminDashboardShell>
   )
 }

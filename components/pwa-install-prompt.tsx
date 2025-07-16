@@ -2,96 +2,69 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Download, X } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Download } from "lucide-react"
+import type { BeforeInstallPromptEvent } from "types"
 
-/* ------------------------------------------------------------------
-   Types
--------------------------------------------------------------------*/
-declare global {
-  interface WindowEventMap {
-    beforeinstallprompt: BeforeInstallPromptEvent
-  }
-}
-
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[]
-  readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>
-  prompt(): Promise<void>
-}
-
-/* ------------------------------------------------------------------
-   Component
--------------------------------------------------------------------*/
-const LOCAL_STORAGE_KEY = "aic_pwa_prompt_dismissed_at"
-const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+const DISMISSED_KEY = "pwa_prompt_dismissed_until"
 
 export function PWAInstallPrompt() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
-  const [open, setOpen] = useState(false)
+  const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null)
+  const [visible, setVisible] = useState(false)
 
-  /* Capture `beforeinstallprompt` and decide whether to show the banner */
+  /* Show prompt only if not dismissed in last 7 days */
+  const mayShow = () => {
+    const ts = localStorage.getItem(DISMISSED_KEY)
+    if (!ts) return true
+    return Date.now() > Number(ts)
+  }
+
   useEffect(() => {
-    const handler = (e: BeforeInstallPromptEvent) => {
-      const isStandalone = window.matchMedia("(display-mode: standalone)").matches
-      if (isStandalone) return
-
-      const lastDismissed = Number(localStorage.getItem(LOCAL_STORAGE_KEY) ?? 0)
-      if (Date.now() - lastDismissed < COOLDOWN_MS) return
-
+    const handler = (e: any) => {
       e.preventDefault()
-      setDeferred(e)
-      setOpen(true)
+      if (mayShow()) {
+        setDeferredEvent(e)
+        setVisible(true)
+      }
     }
-
-    window.addEventListener("beforeinstallprompt", handler)
-    return () => window.removeEventListener("beforeinstallprompt", handler)
+    window.addEventListener("beforeinstallprompt", handler as any)
+    return () => window.removeEventListener("beforeinstallprompt", handler as any)
   }, [])
 
-  /* Helpers */
   const install = async () => {
-    if (!deferred) return
-    await deferred.prompt()
-    await deferred.userChoice
-    closeBanner()
+    if (!deferredEvent) return
+    deferredEvent.prompt()
+    const { outcome } = await deferredEvent.userChoice
+    if (outcome === "accepted") hide()
   }
 
-  const closeBanner = () => {
-    setOpen(false)
-    setDeferred(null)
-    localStorage.setItem(LOCAL_STORAGE_KEY, String(Date.now()))
+  const hide = () => {
+    setVisible(false)
+    /* cooldown 7 days */
+    const next = Date.now() + 7 * 24 * 60 * 60 * 1000
+    localStorage.setItem(DISMISSED_KEY, next.toString())
   }
 
-  if (!open || !deferred) return null
+  if (!visible) return null
 
   return (
-    <div className="fixed inset-x-4 bottom-6 z-50 flex justify-center">
-      <Card className="w-full max-w-md shadow-xl backdrop-blur-sm bg-white/90">
-        <CardHeader className="pb-2 flex items-start gap-3">
-          <Download className="h-5 w-5 text-blue-600 shrink-0" />
-          <div>
-            <CardTitle className="text-base">Install AIC Macedonia</CardTitle>
-            <CardDescription className="text-gray-600">
-              Add the app to your home screen for a faster, full-screen experience.
-            </CardDescription>
+    <div className="fixed bottom-4 inset-x-0 flex justify-center z-50">
+      <Card className="max-w-sm w-full mx-4 p-4 backdrop-blur bg-white/80 shadow-lg border">
+        <div className="flex items-start gap-3">
+          <Download className="h-6 w-6 text-blue-600 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium">Install this app?</p>
+            <p className="text-sm text-gray-600">Get an app-like experience from your home screen.</p>
           </div>
-          <button
-            onClick={closeBanner}
-            aria-label="Dismiss install prompt"
-            className="ml-auto text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </CardHeader>
-
-        <CardContent className="pt-0 pb-4 flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={closeBanner}>
-            Maybe later
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button size="sm" variant="ghost" onClick={hide}>
+            Later
           </Button>
-          <Button size="sm" onClick={install} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button size="sm" onClick={install}>
             Install
           </Button>
-        </CardContent>
+        </div>
       </Card>
     </div>
   )
