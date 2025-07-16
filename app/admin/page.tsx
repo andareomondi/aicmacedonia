@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, FileText, Calendar, ImageIcon, Music, Plus, Bell } from "lucide-react"
+import { Users, FileText, Calendar, ImageIcon, Music, Plus, Bell, Shield, UserCheck } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
 import Link from "next/link"
 
@@ -16,6 +16,8 @@ interface DashboardStats {
   cedGroups: number
   choirs: number
   notifications: number
+  totalMembers: number
+  adminUsers: number
 }
 
 export default function AdminDashboard() {
@@ -28,6 +30,8 @@ export default function AdminDashboard() {
     cedGroups: 0,
     choirs: 0,
     notifications: 0,
+    totalMembers: 0,
+    adminUsers: 0,
   })
   const router = useRouter()
 
@@ -51,7 +55,7 @@ export default function AdminDashboard() {
       const isAdmin = user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin"
 
       if (!isAdmin) {
-        router.push("/")
+        router.push("/admin/unauthorized")
         return
       }
 
@@ -75,6 +79,14 @@ export default function AdminDashboard() {
         supabase.from("notifications").select("id", { count: "exact" }),
       ])
 
+      // Get user statistics
+      const { data: authUsers } = await supabase.auth.admin.listUsers()
+      const totalMembers = authUsers?.users?.length || 0
+      const adminUsers =
+        authUsers?.users?.filter(
+          (user) => user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin",
+        ).length || 0
+
       setStats({
         sermons: sermons.count || 0,
         events: events.count || 0,
@@ -82,6 +94,8 @@ export default function AdminDashboard() {
         cedGroups: cedGroups.count || 0,
         choirs: choirs.count || 0,
         notifications: notifications.count || 0,
+        totalMembers,
+        adminUsers,
       })
     } catch (error) {
       console.error("Error fetching stats:", error)
@@ -144,10 +158,24 @@ export default function AdminDashboard() {
       color: "bg-red-500",
       href: "/admin/notifications",
     },
+    {
+      title: "Total Members",
+      count: stats.totalMembers,
+      icon: UserCheck,
+      color: "bg-indigo-500",
+      href: "#",
+    },
+    {
+      title: "Admin Users",
+      count: stats.adminUsers,
+      icon: Shield,
+      color: "bg-gray-500",
+      href: "#",
+    },
   ]
 
   return (
-    <div className="pt-20 min-h-screen bg-gradient-to-br from-pink-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="pt-20 min-h-screen bg-gradient-to-br from-pink-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -160,7 +188,7 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
               Admin Dashboard
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">Welcome back, {user?.email}</p>
+            <p className="text-gray-600 mt-2">Welcome back, {user?.email}</p>
           </div>
           <Button onClick={handleSignOut} variant="outline">
             Sign Out
@@ -168,7 +196,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {dashboardCards.map((card, index) => (
             <motion.div
               key={card.title}
@@ -176,12 +204,28 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
             >
-              <Link href={card.href}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              {card.href !== "#" ? (
+                <Link href={card.href}>
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">{card.title}</p>
+                          <p className="text-3xl font-bold">{card.count}</p>
+                        </div>
+                        <div className={`p-3 rounded-full ${card.color}`}>
+                          <card.icon className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ) : (
+                <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{card.title}</p>
+                        <p className="text-sm font-medium text-gray-600">{card.title}</p>
                         <p className="text-3xl font-bold">{card.count}</p>
                       </div>
                       <div className={`p-3 rounded-full ${card.color}`}>
@@ -190,7 +234,7 @@ export default function AdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              )}
             </motion.div>
           ))}
         </div>
