@@ -1,16 +1,19 @@
+
 "use client"
 
 import Link from "next/link"
-import { createServerClient } from "@supabase/ssr"
-import { redirect } from "next/navigation"
-import AdminDashboardShell from "@/components/admin-dashboard-shell"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Users, Bell, Music, Calendar, Group, ImageIcon, BookOpen } from "lucide-react"
-import { supabase } from "@/lib/supabase-client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import {
+  Bell, Music, Calendar, Group, ImageIcon, BookOpen, Users
+} from "lucide-react"
+import { supabase } from "@/lib/supabase-client"
+import AdminDashboardShell from "@/components/admin-dashboard-shell"
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 interface DashboardStats {
   sermons: number
@@ -23,133 +26,84 @@ interface DashboardStats {
   adminUsers: number
 }
 
-export const dynamic = "force-dynamic" // make sure counts are fresh on each load
+export const dynamic = "force-dynamic"
 
-export default async function AdminDashboardPage() {
-  const supabaseClient = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
-
-  const {
-    data: { user },
-  } = await supabaseClient.auth.getUser()
-
-  if (!user) {
-    redirect("/login")
-  }
-
-  const role = user.user_metadata?.role ?? user.raw_user_meta_data?.role
-  if (role !== "admin") {
-    redirect("/admin/unauthorized")
-  }
-
-  const [sermons, events, gallery, cedGroups, choirs, notifications] = await Promise.all([
-    supabaseClient.from("sermons").select("id", { count: "exact" }),
-    supabaseClient.from("events").select("id", { count: "exact" }),
-    supabaseClient.from("gallery").select("id", { count: "exact" }),
-    supabaseClient.from("ced_groups").select("id", { count: "exact" }),
-    supabaseClient.from("choirs").select("id", { count: "exact" }),
-    supabaseClient.from("notifications").select("id", { count: "exact" }),
-  ])
-
-  const { users } = await supabaseClient.auth.admin.listUsers()
-  const totalMembers = users.length
-  const adminUsers = users.filter(
-    (u) => u.user_metadata?.role === "admin" || u.raw_user_meta_data?.role === "admin",
-  ).length
-
-  const adminSections = [
-    {
-      title: "Notifications",
-      description: "Manage church announcements and alerts.",
-      icon: <Bell className="h-6 w-6 text-blue-500" />,
-      href: "/admin/notifications",
-    },
-    {
-      title: "Choirs",
-      description: "Oversee choir groups, members, and schedules.",
-      icon: <Music className="h-6 w-6 text-green-500" />,
-      href: "/admin/choirs",
-    },
-    {
-      title: "Events",
-      description: "Handle event listings, dates, and details.",
-      icon: <Calendar className="h-6 w-6 text-purple-500" />,
-      href: "/admin/events",
-    },
-    {
-      title: "CED Groups",
-      description: "Manage Christian Education Department groups.",
-      icon: <Group className="h-6 w-6 text-yellow-500" />,
-      href: "/admin/ced-groups",
-    },
-    {
-      title: "Gallery",
-      description: "Upload and manage church photos and videos.",
-      icon: <ImageIcon className="h-6 w-6 text-red-500" />,
-      href: "/admin/gallery",
-    },
-    {
-      title: "Sermons",
-      description: "Manage sermon audio, video, and notes.",
-      icon: <BookOpen className="h-6 w-6 text-indigo-500" />,
-      href: "/admin/sermons",
-    },
-  ]
-
-  const [stats, setStats] = useState<DashboardStats>({
-    sermons: sermons.count ?? 0,
-    events: events.count ?? 0,
-    gallery: gallery.count ?? 0,
-    cedGroups: cedGroups.count ?? 0,
-    choirs: choirs.count ?? 0,
-    notifications: notifications.count ?? 0,
-    totalMembers,
-    adminUsers,
-  })
-
-  const router = useRouter()
+export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [userClient, setUserClient] = useState<any>(null)
+  const router = useRouter()
 
   useEffect(() => {
-    const checkUser = async () => {
+    const fetchData = async () => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
+        const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          router.push("/login")
-          return
+          return router.push("/login")
         }
 
-        const isAdmin = user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin"
-
-        if (!isAdmin) {
-          router.push("/admin/unauthorized")
-          return
+        const role = user.user_metadata?.role ?? user.raw_user_meta_data?.role
+        if (role !== "admin") {
+          return router.push("/admin/unauthorized")
         }
 
-        setUserClient(user)
+        setUser(user)
+
+        const [sermons, events, gallery, cedGroups, choirs, notifications] = await Promise.all([
+          supabase.from("sermons").select("id", { count: "exact" }),
+          supabase.from("events").select("id", { count: "exact" }),
+          supabase.from("gallery").select("id", { count: "exact" }),
+          supabase.from("ced_groups").select("id", { count: "exact" }),
+          supabase.from("choirs").select("id", { count: "exact" }),
+          supabase.from("notifications").select("id", { count: "exact" }),
+        ])
+
+        const { data: usersList } = await supabase.auth.admin.listUsers()
+        const users = usersList?.users ?? []
+        const totalMembers = users.length
+        const adminUsers = users.filter(
+          (u) =>
+            u.user_metadata?.role === "admin" ||
+            u.raw_user_meta_data?.role === "admin"
+        ).length
+
+        setStats({
+          sermons: sermons.count ?? 0,
+          events: events.count ?? 0,
+          gallery: gallery.count ?? 0,
+          cedGroups: cedGroups.count ?? 0,
+          choirs: choirs.count ?? 0,
+          notifications: notifications.count ?? 0,
+          totalMembers,
+          adminUsers,
+        })
       } catch (error) {
-        console.error("Error checking user:", error)
+        console.error("Error loading dashboard:", error)
         router.push("/login")
       } finally {
         setLoading(false)
       }
     }
 
-    checkUser()
-  }, [])
+    fetchData()
+  }, [router])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push("/")
   }
 
-  if (loading) {
+  const adminSections = [
+    { title: "Notifications", description: "Manage church announcements and alerts.", icon: <Bell className="h-6 w-6 text-blue-500" />, href: "/admin/notifications" },
+    { title: "Choirs", description: "Oversee choir groups, members, and schedules.", icon: <Music className="h-6 w-6 text-green-500" />, href: "/admin/choirs" },
+    { title: "Events", description: "Handle event listings, dates, and details.", icon: <Calendar className="h-6 w-6 text-purple-500" />, href: "/admin/events" },
+    { title: "CED Groups", description: "Manage Christian Education Department groups.", icon: <Group className="h-6 w-6 text-yellow-500" />, href: "/admin/ced-groups" },
+    { title: "Gallery", description: "Upload and manage church photos and videos.", icon: <ImageIcon className="h-6 w-6 text-red-500" />, href: "/admin/gallery" },
+    { title: "Sermons", description: "Manage sermon audio, video, and notes.", icon: <BookOpen className="h-6 w-6 text-indigo-500" />, href: "/admin/sermons" },
+  ]
+
+  if (loading || !stats || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -159,17 +113,8 @@ export default async function AdminDashboardPage() {
 
   return (
     <AdminDashboardShell
-      userEmail={userClient?.email ?? ""}
-      stats={{
-        sermons: stats.sermons,
-        events: stats.events,
-        gallery: stats.gallery,
-        cedGroups: stats.cedGroups,
-        choirs: stats.choirs,
-        notifications: stats.notifications,
-        totalMembers: stats.totalMembers,
-        adminUsers: stats.adminUsers,
-      }}
+      userEmail={user.email}
+      stats={stats}
     >
       <div className="pt-20 min-h-screen bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="container mx-auto px-4 py-8">
@@ -184,14 +129,14 @@ export default async function AdminDashboardPage() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
                 Admin Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Welcome back, {userClient?.email}</p>
+              <p className="text-gray-600 mt-2">Welcome back, {user.email}</p>
             </div>
             <Button onClick={handleSignOut} variant="outline">
               Sign Out
             </Button>
           </motion.div>
 
-          {/* Stats Cards */}
+          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Link href="/admin/users" passHref>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -218,11 +163,9 @@ export default async function AdminDashboardPage() {
                 </CardContent>
               </Card>
             </Link>
-
-            {/* Add more summary cards here if needed */}
           </div>
 
-          {/* Quick Actions */}
+          {/* Admin Sections */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -250,3 +193,4 @@ export default async function AdminDashboardPage() {
     </AdminDashboardShell>
   )
 }
+
