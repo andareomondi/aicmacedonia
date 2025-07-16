@@ -32,12 +32,48 @@ const departments = [
   },
 ]
 
+const cedGroups = [
+  {
+    name: "Battalion",
+    description: "Church scouts program for boys - building character and faith",
+    href: "/departments/ced/Battalion",
+    image: "https://picsum.photos/400/250?random=1",
+  },
+  {
+    name: "Cadet",
+    description: "Church scouts program for girls - nurturing leadership and spirituality",
+    href: "/departments/ced/Cadet",
+    image: "https://picsum.photos/400/250?random=2",
+  },
+  {
+    name: "Youth",
+    description: "Programs for senior and junior teens - growing in faith together",
+    href: "/departments/ced/Youth",
+    image: "https://picsum.photos/400/250?random=3",
+  },
+  {
+    name: "Ushirika wa Wake",
+    description: "Ladies communion - fellowship and spiritual growth for women",
+    href: "/departments/ced/Ushirika wa Wake",
+    image: "https://picsum.photos/400/250?random=4",
+  },
+  {
+    name: "Men Communion",
+    description: "Fellowship and spiritual development for men of the church",
+    href: "/departments/ced/Men Communion",
+    image: "https://picsum.photos/400/250?random=5",
+  },
+  {
+    name: "Praise and Worship",
+    description: "Leading the congregation in worship and praise",
+    href: "/departments/ced/Praise and Worship",
+    image: "https://picsum.photos/400/250?random=6",
+  },
+]
+
 export function Departments() {
   return (
-    <section
-      className="py-20 bg-gradient-to-br from-blue-50 to-pink-50 dark:from-gray-800 dark:to-gray-900"
-      id="departments"
-    >
+    <section className="py-20 bg-gradient-to-br from-blue-50 to-pink-50" id="departments">
       <div className="container mx-auto px-4">
         <motion.h2
           className="text-4xl md:text-5xl font-bold text-center mb-14 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent"
@@ -49,7 +85,7 @@ export function Departments() {
           Departments
         </motion.h2>
 
-        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-3 mb-16">
           {departments.map((dept, idx) => (
             <motion.div
               key={dept.id}
@@ -67,7 +103,7 @@ export function Departments() {
                       style={{ backgroundImage: `url('https://picsum.photos/500/300?random=${idx + 1}')` }}
                     />
                     <h3 className="text-2xl font-semibold">{dept.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 flex-1">{dept.description}</p>
+                    <p className="text-gray-600 flex-1">{dept.description}</p>
 
                     {/* leader */}
                     <div className="flex items-center gap-4">
@@ -82,11 +118,54 @@ export function Departments() {
                       </Avatar>
                       <div className="text-sm">
                         <p className="font-medium">{dept.leader.name}</p>
-                        <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1 text-gray-500">
                           <Phone className="h-3 w-3" />
                           <span>{dept.leader.phone}</span>
                         </div>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* CED Groups Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h3 className="text-3xl font-bold mb-4 text-gray-800">CED Groups</h3>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Our Christian Education Department includes various groups for different age groups and interests
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {cedGroups.map((group, index) => (
+            <motion.div
+              key={group.name}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Link href={group.href}>
+                <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer group border hover:border-blue-200">
+                  <CardContent className="p-0">
+                    <div
+                      className="h-40 w-full bg-cover bg-center rounded-t-lg"
+                      style={{ backgroundImage: `url('${group.image}')` }}
+                    />
+                    <div className="p-6">
+                      <h4 className="text-lg font-semibold mb-2 text-gray-800 group-hover:text-blue-600 transition-colors">
+                        {group.name}
+                      </h4>
+                      <p className="text-gray-600 text-sm">{group.description}</p>
                     </div>
                   </CardContent>
                 </Card>

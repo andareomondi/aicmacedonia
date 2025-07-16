@@ -4,19 +4,20 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Toaster } from "@/components/ui/toaster"
 import { BackgroundAnimation } from "@/components/background-animation"
+import { AuthGuard } from "@/components/auth-guard"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "AIC Macedonia - African Inland Church",
   description:
-    "Welcome to AIC Macedonia, a local council church under AIC Kasina, serving the community in Athiriver, Kenya.",
+    "A local council church under AIC Kasina, serving our community in Athiriver, Kenya with love, faith, and fellowship.",
   manifest: "/manifest.json",
   themeColor: "#3b82f6",
   viewport: "width=device-width, initial-scale=1",
-  generator: "v0.dev",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -25,13 +26,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.className}>
-        <BackgroundAnimation />
-        <Header />
-        {children}
-        <Footer />
-        <Toaster />
+        <AuthGuard>
+          <BackgroundAnimation />
+          <Header />
+          {children}
+          <Footer />
+          <Toaster />
+        </AuthGuard>
       </body>
     </html>
   )

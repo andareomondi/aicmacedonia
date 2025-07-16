@@ -2,13 +2,29 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { supabase, type CEDGroup } from "@/lib/supabase"
+import { createClient } from "@/lib/supabase-client"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Phone, Mail, Users, Calendar, Music, BookOpen, Lightbulb, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+
+interface CEDGroup {
+  id: string
+  name: string
+  description: string | null
+  leader_name: string | null
+  leader_phone: string | null
+  leader_email: string | null
+  meeting_day: string | null
+  group_song: string | null
+  mission: string | null
+  vision: string | null
+  image_url: string | null
+  created_at: string
+  updated_at: string
+}
 
 export default function CEDGroupPage() {
   const { groupId } = useParams()
@@ -23,11 +39,12 @@ export default function CEDGroupPage() {
       setLoading(true)
       setError(null)
       try {
-        const { data, error } = await supabase
-          .from("ced_groups")
-          .select("*")
-          .eq("id", groupId as string)
-          .single()
+        const supabase = createClient()
+
+        // Decode the URL parameter and fetch by name instead of UUID
+        const groupName = decodeURIComponent(groupId as string)
+
+        const { data, error } = await supabase.from("ced_groups").select("*").eq("name", groupName).single()
 
         if (error) {
           throw error
@@ -87,25 +104,23 @@ export default function CEDGroupPage() {
               {group.name}
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {group.description || "No description available."}
+              {group.description || "A dedicated group within our Christian Education Department."}
             </p>
           </motion.div>
 
           {/* Group Image */}
-          {group.image_url && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="max-w-4xl mx-auto mb-16 rounded-lg overflow-hidden shadow-xl"
-            >
-              <img
-                src={group.image_url || "/placeholder.svg"}
-                alt={`${group.name} Group`}
-                className="w-full h-96 object-cover"
-              />
-            </motion.div>
-          )}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-4xl mx-auto mb-16 rounded-lg overflow-hidden shadow-xl"
+          >
+            <img
+              src={group.image_url || `https://picsum.photos/seed/${group.name}/800/600`}
+              alt={`${group.name} Group`}
+              className="w-full h-96 object-cover"
+            />
+          </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Leader Information */}
@@ -114,15 +129,18 @@ export default function CEDGroupPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Card className="h-full border-gradient">
+              <Card className="h-full border-2 border-gradient-to-r from-pink-200 to-blue-200">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold mb-6 flex items-center">
                     <Users className="h-6 w-6 mr-3 text-blue-500" />
                     Group Leader
                   </h2>
                   <div className="flex items-center space-x-6 mb-6">
-                    <Avatar className="w-24 h-24 ring-4 ring-gradient-to-r from-pink-200 to-blue-200">
-                      <AvatarImage src={group.image_url || "/placeholder.svg"} alt={group.leader_name || "Leader"} />
+                    <Avatar className="w-24 h-24 ring-4 ring-pink-200">
+                      <AvatarImage
+                        src={`https://picsum.photos/seed/${group.leader_name}/200/200`}
+                        alt={group.leader_name || "Leader"}
+                      />
                       <AvatarFallback className="text-xl bg-gradient-to-r from-pink-100 to-blue-100">
                         {group.leader_name
                           ? group.leader_name
@@ -133,7 +151,7 @@ export default function CEDGroupPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="text-xl font-semibold">{group.leader_name || "N/A"}</h3>
+                      <h3 className="text-xl font-semibold">{group.leader_name || "To be announced"}</h3>
                       <p className="text-pink-600 font-medium">CED Group Leader</p>
                     </div>
                   </div>
@@ -161,43 +179,29 @@ export default function CEDGroupPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
             >
-              <Card className="h-full border-gradient">
+              <Card className="h-full border-2 border-gradient-to-r from-blue-200 to-pink-200">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold mb-6 flex items-center">
                     <BookOpen className="h-6 w-6 mr-3 text-pink-500" />
                     Group Details
                   </h2>
-                  <div className="space-y-4 text-gray-700">
+                  <div className="space-y-6 text-gray-700">
                     {group.meeting_day && (
-                      <div className="flex items-center">
-                        <Calendar className="h-5 w-5 mr-3 text-blue-500" />
-                        <span className="font-semibold">Meeting Day:</span>
-                        <span className="ml-2">{group.meeting_day}</span>
+                      <div className="flex items-start">
+                        <Calendar className="h-5 w-5 mr-3 text-blue-500 mt-1" />
+                        <div>
+                          <span className="font-semibold block">Meeting Day:</span>
+                          <span className="text-gray-600">{group.meeting_day}</span>
+                        </div>
                       </div>
                     )}
                     {group.group_song && (
-                      <div className="flex items-center">
-                        <Music className="h-5 w-5 mr-3 text-pink-500" />
-                        <span className="font-semibold">Group Song:</span>
-                        <span className="ml-2 italic">"{group.group_song}"</span>
-                      </div>
-                    )}
-                    {group.mission && (
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <BookOpen className="h-5 w-5 mr-3 text-blue-500" />
-                          <span className="font-semibold">Mission:</span>
+                      <div className="flex items-start">
+                        <Music className="h-5 w-5 mr-3 text-pink-500 mt-1" />
+                        <div>
+                          <span className="font-semibold block">Group Song:</span>
+                          <span className="text-gray-600 italic">"{group.group_song}"</span>
                         </div>
-                        <p className="ml-8">{group.mission}</p>
-                      </div>
-                    )}
-                    {group.vision && (
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <Lightbulb className="h-5 w-5 mr-3 text-pink-500" />
-                          <span className="font-semibold">Vision:</span>
-                        </div>
-                        <p className="ml-8">{group.vision}</p>
                       </div>
                     )}
                   </div>
@@ -206,14 +210,56 @@ export default function CEDGroupPage() {
             </motion.div>
           </div>
 
+          {/* Mission and Vision */}
+          <div className="grid lg:grid-cols-2 gap-12 mt-12">
+            {group.mission && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
+                <Card className="h-full border-2 border-blue-200">
+                  <CardContent className="p-8">
+                    <h3 className="text-2xl font-bold mb-4 flex items-center text-blue-600">
+                      <BookOpen className="h-6 w-6 mr-3" />
+                      Our Mission
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed">{group.mission}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {group.vision && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+              >
+                <Card className="h-full border-2 border-pink-200">
+                  <CardContent className="p-8">
+                    <h3 className="text-2xl font-bold mb-4 flex items-center text-pink-600">
+                      <Lightbulb className="h-6 w-6 mr-3" />
+                      Our Vision
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed">{group.vision}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
             className="text-center mt-16"
           >
             <Link href="/departments/ced">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white px-8 py-3"
+              >
                 Back to All CED Groups
               </Button>
             </Link>

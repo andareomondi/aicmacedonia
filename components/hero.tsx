@@ -13,7 +13,7 @@ export function Hero() {
       className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://picsum.photos/1920/1080?random=church')",
+          "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://picsum.photos/seed/church/1920/1080')",
       }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20">
@@ -51,42 +51,42 @@ export function Hero() {
             </div>
           </motion.div>
 
-          {/* Info Cards */}
+          {/* Info Cards - More Translucent */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
           >
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
               <CardContent className="p-6 text-center">
-                <MapPin className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-                <h3 className="font-semibold text-gray-900 mb-2">Location</h3>
-                <p className="text-sm text-gray-600">Greatwall, Athiriver Kenya</p>
+                <MapPin className="h-8 w-8 text-white mx-auto mb-3" />
+                <h3 className="font-semibold text-white mb-2">Location</h3>
+                <p className="text-sm text-gray-200">Greatwall, Athiriver Kenya</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
               <CardContent className="p-6 text-center">
-                <Clock className="h-8 w-8 text-pink-600 mx-auto mb-3" />
-                <h3 className="font-semibold text-gray-900 mb-2">Service Times</h3>
-                <p className="text-sm text-gray-600">Sunday 9:00 AM & 11:00 AM</p>
+                <Clock className="h-8 w-8 text-pink-300 mx-auto mb-3" />
+                <h3 className="font-semibold text-white mb-2">Service Times</h3>
+                <p className="text-sm text-gray-200">Sunday 9:00 AM & 11:00 AM</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
               <CardContent className="p-6 text-center">
-                <Users className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-                <h3 className="font-semibold text-gray-900 mb-2">Community</h3>
-                <p className="text-sm text-gray-600">Growing family of believers</p>
+                <Users className="h-8 w-8 text-blue-300 mx-auto mb-3" />
+                <h3 className="font-semibold text-white mb-2">Community</h3>
+                <p className="text-sm text-gray-200">Growing family of believers</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
               <CardContent className="p-6 text-center">
-                <Heart className="h-8 w-8 text-pink-600 mx-auto mb-3" />
-                <h3 className="font-semibold text-gray-900 mb-2">Mission</h3>
-                <p className="text-sm text-gray-600">Spreading God's love & grace</p>
+                <Heart className="h-8 w-8 text-pink-300 mx-auto mb-3" />
+                <h3 className="font-semibold text-white mb-2">Mission</h3>
+                <p className="text-sm text-gray-200">Spreading God's love & grace</p>
               </CardContent>
             </Card>
           </motion.div>
