@@ -42,7 +42,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "You have been logged in.",
       })
-      router.push("/admin") // Redirect to admin page after successful login
+      router.push("/") // Redirect to admin page after successful login
     }
     setLoading(false)
   }
