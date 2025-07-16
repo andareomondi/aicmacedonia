@@ -26,15 +26,9 @@ interface DashboardStats {
 export const dynamic = "force-dynamic" // make sure counts are fresh on each load
 
 export default async function AdminDashboardPage() {
-  const cookieStore = cookies()
   const supabaseClient = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
-      },
-    },
   )
 
   const {
