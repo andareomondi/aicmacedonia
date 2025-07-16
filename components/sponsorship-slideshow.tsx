@@ -1,79 +1,58 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
-interface Slide {
-  id: number
-  title: string
-  subtitle: string
-  image: string
-}
-
-const slides: Slide[] = [
-  {
-    id: 1,
-    title: "Support Our Mission",
-    subtitle: "Every contribution makes a difference.",
-    image: "/placeholder.svg?height=800&width=1600",
-  },
-  {
-    id: 2,
-    title: "Partner with Us",
-    subtitle: "Help us reach more souls in Macedonia.",
-    image: "/placeholder.svg?height=800&width=1600",
-  },
-  {
-    id: 3,
-    title: "Build the Future",
-    subtitle: "Your generosity fuels our ministries.",
-    image: "/placeholder.svg?height=800&width=1600",
-  },
+const slides = [
+  { src: "/placeholder.svg?width=1200&height=600", alt: "Sponsor 1" },
+  { src: "/placeholder.svg?width=1200&height=600", alt: "Sponsor 2" },
+  { src: "/placeholder.svg?width=1200&height=600", alt: "Sponsor 3" },
 ]
 
 export function SponsorshipSlideshow() {
-  const [index, setIndex] = useState(0)
-  const timeoutRef = useRef<NodeJS.Timeout>()
-
-  const next = () => setIndex((i) => (i + 1) % slides.length)
-  const prev = () => setIndex((i) => (i - 1 + slides.length) % slides.length)
+  const [idx, setIdx] = useState(0)
 
   useEffect(() => {
-    timeoutRef.current = setTimeout(next, 7000)
-    return () => clearTimeout(timeoutRef.current)
-  }, [index])
+    const id = setInterval(() => setIdx((i) => (i + 1) % slides.length), 5000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
-    <div className="relative overflow-hidden h-[60vh]">
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={slides[index].id}
-          className="absolute inset-0 bg-cover bg-center flex items-center justify-center"
-          style={{ backgroundImage: `url(${slides[index].image})` }}
-          initial={{ opacity: 0, scale: 1.08 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="bg-black/50 p-8 rounded-lg text-center text-white backdrop-blur-sm max-w-md">
-            <h2 className="text-3xl font-bold mb-2">{slides[index].title}</h2>
-            <p className="mb-6">{slides[index].subtitle}</p>
-            <Button variant="secondary" size="lg">
-              Become a Sponsor
-            </Button>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Controls */}
-      <Button size="icon" variant="ghost" className="absolute left-4 top-1/2 -translate-y-1/2" onClick={prev}>
-        <ChevronLeft />
+    <section className="relative w-full aspect-[2/1] overflow-hidden rounded-lg bg-muted">
+      {slides.map((s, i) => (
+        <Image
+          key={s.alt}
+          src={s.src || "/placeholder.svg"}
+          alt={s.alt}
+          fill
+          className={`object-cover transition-opacity duration-700 ${i === idx ? "opacity-100" : "opacity-0"}`}
+        />
+      ))}
+      {/* controls */}
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => setIdx((idx - 1 + slides.length) % slides.length)}
+        className="absolute top-1/2 left-4 -translate-y-1/2"
+      >
+        <ArrowLeft className="w-5 h-5" />
       </Button>
-      <Button size="icon" variant="ghost" className="absolute right-4 top-1/2 -translate-y-1/2" onClick={next}>
-        <ChevronRight />
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => setIdx((idx + 1) % slides.length)}
+        className="absolute top-1/2 right-4 -translate-y-1/2"
+      >
+        <ArrowRight className="w-5 h-5" />
       </Button>
-    </div>
+      {/* dots */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+        {slides.map((_, i) => (
+          <span key={i} className={`h-2 w-2 rounded-full ${i === idx ? "bg-primary" : "bg-muted-foreground/50"}`} />
+        ))}
+      </div>
+    </section>
   )
 }

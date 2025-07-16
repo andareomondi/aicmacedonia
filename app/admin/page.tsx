@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
@@ -13,6 +12,7 @@ import { supabase } from "@/lib/supabase-client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import type { Database } from "@/types_db"
 
 interface DashboardStats {
   sermons: number
@@ -25,11 +25,13 @@ interface DashboardStats {
   adminUsers: number
 }
 
+export const dynamic = "force-dynamic" // make sure counts are fresh on each load
+
 export default async function AdminDashboardPage() {
   const cookieStore = cookies()
-  const supabaseClient = createServerClient(
+  const supabaseClient = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
         get: (name: string) => cookieStore.get(name)?.value,
@@ -45,29 +47,25 @@ export default async function AdminDashboardPage() {
     redirect("/login")
   }
 
-  // Fetch user metadata to check for admin role
-  const { data: userMetadata, error: metadataError } = await supabaseClient
-    .from("users") // Assuming you have a 'users' table storing user metadata
-    .select("user_metadata")
-    .eq("id", user.id)
-    .single()
-
-  if (metadataError || userMetadata?.user_metadata?.role !== "admin") {
+  const role = user.user_metadata?.role ?? user.raw_user_meta_data?.role
+  if (role !== "admin") {
     redirect("/admin/unauthorized")
   }
 
-  // Fetch total registered members
-  const { count: totalMembers, error: membersError } = await supabaseClient
-    .from("users")
-    .select("*", { count: "exact" })
+  const [sermons, events, gallery, cedGroups, choirs, notifications] = await Promise.all([
+    supabaseClient.from("sermons").select("id", { count: "exact" }),
+    supabaseClient.from("events").select("id", { count: "exact" }),
+    supabaseClient.from("gallery").select("id", { count: "exact" }),
+    supabaseClient.from("ced_groups").select("id", { count: "exact" }),
+    supabaseClient.from("choirs").select("id", { count: "exact" }),
+    supabaseClient.from("notifications").select("id", { count: "exact" }),
+  ])
 
-  // Fetch total admin users
-  const { data: adminUsersData, error: adminError } = await supabaseClient
-    .from("users")
-    .select("user_metadata")
-    .filter("user_metadata->>role", "eq", "admin")
-
-  const totalAdminUsers = adminUsersData?.length || 0
+  const { users } = await supabaseClient.auth.admin.listUsers()
+  const totalMembers = users.length
+  const adminUsers = users.filter(
+    (u) => u.user_metadata?.role === "admin" || u.raw_user_meta_data?.role === "admin",
+  ).length
 
   const adminSections = [
     {
@@ -109,14 +107,14 @@ export default async function AdminDashboardPage() {
   ]
 
   const [stats, setStats] = useState<DashboardStats>({
-    sermons: 0,
-    events: 0,
-    gallery: 0,
-    cedGroups: 0,
-    choirs: 0,
-    notifications: 0,
-    totalMembers: totalMembers ?? 0,
-    adminUsers: totalAdminUsers,
+    sermons: sermons.count ?? 0,
+    events: events.count ?? 0,
+    gallery: gallery.count ?? 0,
+    cedGroups: cedGroups.count ?? 0,
+    choirs: choirs.count ?? 0,
+    notifications: notifications.count ?? 0,
+    totalMembers,
+    adminUsers,
   })
 
   const router = useRouter()
@@ -135,7 +133,6 @@ export default async function AdminDashboardPage() {
           return
         }
 
-        // Check if user has admin role
         const isAdmin = user.user_metadata?.role === "admin" || user.raw_user_meta_data?.role === "admin"
 
         if (!isAdmin) {
@@ -152,34 +149,7 @@ export default async function AdminDashboardPage() {
       }
     }
 
-    const fetchStats = async () => {
-      try {
-        const [sermons, events, gallery, cedGroups, choirs, notifications] = await Promise.all([
-          supabase.from("sermons").select("id", { count: "exact" }),
-          supabase.from("events").select("id", { count: "exact" }),
-          supabase.from("gallery").select("id", { count: "exact" }),
-          supabase.from("ced_groups").select("id", { count: "exact" }),
-          supabase.from("choirs").select("id", { count: "exact" }),
-          supabase.from("notifications").select("id", { count: "exact" }),
-        ])
-
-        setStats({
-          sermons: sermons.count || 0,
-          events: events.count || 0,
-          gallery: gallery.count || 0,
-          cedGroups: cedGroups.count || 0,
-          choirs: choirs.count || 0,
-          notifications: notifications.count || 0,
-          totalMembers: totalMembers ?? 0,
-          adminUsers: totalAdminUsers,
-        })
-      } catch (error) {
-        console.error("Error fetching stats:", error)
-      }
-    }
-
     checkUser()
-    fetchStats()
   }, [])
 
   const handleSignOut = async () => {
@@ -202,6 +172,9 @@ export default async function AdminDashboardPage() {
         sermons: stats.sermons,
         events: stats.events,
         gallery: stats.gallery,
+        cedGroups: stats.cedGroups,
+        choirs: stats.choirs,
+        notifications: stats.notifications,
         totalMembers: stats.totalMembers,
         adminUsers: stats.adminUsers,
       }}

@@ -1,32 +1,49 @@
-import { createServerClient } from "@supabase/ssr"
+/**  SERVER COMPONENT  */
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { createServerClient } from "@supabase/ssr"
 import UsersManagementShell from "@/components/users-management-shell"
+import type { Database } from "@/types_db"
 
-export default async function AdminUsersPage({
+export const dynamic = "force-dynamic"
+
+export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: { filter?: string }
+  searchParams?: { role?: string }
 }) {
-  const supabase = createServerClient(
+  const cookieStore = cookies()
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name: string) => cookies().get(name)?.value } },
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        get: (name) => cookieStore.get(name)?.value,
+      },
+    },
   )
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
   if (!user) redirect("/login")
+  if (user.user_metadata?.role !== "admin" && user.raw_user_meta_data?.role !== "admin") redirect("/admin/unauthorized")
 
-  const role = (user.user_metadata as { role?: string })?.role ?? (user.raw_user_meta_data as { role?: string })?.role
+  const { users } = await supabase.auth.admin.listUsers()
 
-  if (role !== "admin") redirect("/admin/unauthorized")
+  const roleFilter = searchParams?.role
+  const rows = users
+    .filter((u) => {
+      if (!roleFilter) return true
+      const r = u.user_metadata?.role ?? u.raw_user_meta_data?.role
+      return r === roleFilter
+    })
+    .map((u) => ({
+      id: u.id,
+      email: u.email!,
+      lastSignIn: u.last_sign_in_at,
+      role: u.user_metadata?.role ?? u.raw_user_meta_data?.role ?? "member",
+    }))
 
-  const { data: authUsers } = await supabase.auth.admin.listUsers()
-
-  const users = authUsers?.users ?? []
-
-  return <UsersManagementShell initialUsers={users} initialFilter={searchParams.filter ?? "all"} />
+  return <UsersManagementShell initialUsers={rows} />
 }

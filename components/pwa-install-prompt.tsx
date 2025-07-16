@@ -2,69 +2,59 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Download } from "lucide-react"
-import type { BeforeInstallPromptEvent } from "types"
+import { Card, CardContent } from "@/components/ui/card"
+import type { BeforeInstallPromptEvent } from "@types"
 
-const DISMISSED_KEY = "pwa_prompt_dismissed_until"
+declare global {
+  interface WindowEventMap {
+    beforeinstallprompt: BeforeInstallPromptEvent
+  }
+}
 
 export function PWAInstallPrompt() {
-  const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null)
-  const [visible, setVisible] = useState(false)
-
-  /* Show prompt only if not dismissed in last 7 days */
-  const mayShow = () => {
-    const ts = localStorage.getItem(DISMISSED_KEY)
-    if (!ts) return true
-    return Date.now() > Number(ts)
-  }
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
+  const [show, setShow] = useState(false)
 
   useEffect(() => {
-    const handler = (e: any) => {
+    const saved = localStorage.getItem("pwa-dismissed")
+    if (saved === "true") return // respect 7-day cooldown
+
+    function handler(e: BeforeInstallPromptEvent) {
       e.preventDefault()
-      if (mayShow()) {
-        setDeferredEvent(e)
-        setVisible(true)
-      }
+      setDeferred(e)
+      setShow(true)
     }
-    window.addEventListener("beforeinstallprompt", handler as any)
-    return () => window.removeEventListener("beforeinstallprompt", handler as any)
+    window.addEventListener("beforeinstallprompt", handler)
+    return () => window.removeEventListener("beforeinstallprompt", handler)
   }, [])
 
-  const install = async () => {
-    if (!deferredEvent) return
-    deferredEvent.prompt()
-    const { outcome } = await deferredEvent.userChoice
-    if (outcome === "accepted") hide()
+  function hide() {
+    setShow(false)
+    // hide for 7 days
+    const in7Days = Date.now() + 7 * 24 * 60 * 60 * 1000
+    localStorage.setItem("pwa-dismissed", "true")
+    localStorage.setItem("pwa-dismissed-until", in7Days.toString())
   }
 
-  const hide = () => {
-    setVisible(false)
-    /* cooldown 7 days */
-    const next = Date.now() + 7 * 24 * 60 * 60 * 1000
-    localStorage.setItem(DISMISSED_KEY, next.toString())
+  async function install() {
+    deferred?.prompt()
+    const { outcome } = await deferred!.userChoice
+    if (outcome === "accepted") setShow(false)
   }
 
-  if (!visible) return null
-
+  if (!show) return null
   return (
-    <div className="fixed bottom-4 inset-x-0 flex justify-center z-50">
-      <Card className="max-w-sm w-full mx-4 p-4 backdrop-blur bg-white/80 shadow-lg border">
-        <div className="flex items-start gap-3">
-          <Download className="h-6 w-6 text-blue-600 shrink-0" />
-          <div className="flex-1">
-            <p className="font-medium">Install this app?</p>
-            <p className="text-sm text-gray-600">Get an app-like experience from your home screen.</p>
+    <div className="fixed inset-x-0 bottom-4 flex justify-center">
+      <Card className="w-[360px] shadow-lg backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <CardContent className="p-4 flex flex-col gap-3 text-center">
+          <p className="font-medium">Install AIC Macedonia?</p>
+          <div className="flex justify-center gap-2">
+            <Button onClick={install}>Install</Button>
+            <Button variant="outline" onClick={hide}>
+              Later
+            </Button>
           </div>
-        </div>
-        <div className="mt-4 flex justify-end gap-2">
-          <Button size="sm" variant="ghost" onClick={hide}>
-            Later
-          </Button>
-          <Button size="sm" onClick={install}>
-            Install
-          </Button>
-        </div>
+        </CardContent>
       </Card>
     </div>
   )
