@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import AdminDashboardShell from "@/components/admin-dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +11,6 @@ import { supabase } from "@/lib/supabase-client"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import type { Database } from "@/types_db"
 
 interface DashboardStats {
   sermons: number
