@@ -1,30 +1,56 @@
-# AIC Macedonia Website
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+# AIC Macedonia Web App
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/andareomondis-projects/v0-aic-macedonia-website)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/xHB98a9NPGn)
+A modern web application built for AIC Macedonia to manage and display church events, media, choirs, and other important announcements. The app is built with [Next.js](https://nextjs.org/) and [Supabase](https://supabase.com/), and deployed on [Vercel](https://vercel.com).
 
-## Overview
+🌍 Live Site: [aicmacedonia.vercel.app](https://aicmacedonia.vercel.app)
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+---
 
-## Deployment
+## ✨ Features
 
-Your project is live at:
+- 🗓️ **Events Management**  
+  Display upcoming and featured church events with dynamic updates.
 
-**[https://vercel.com/andareomondis-projects/v0-aic-macedonia-website](https://vercel.com/andareomondis-projects/v0-aic-macedonia-website)**
+- 🎶 **Choir & Ministry Showcases**  
+  Highlight choir groups, their photos, and their contributions.
 
-## Build your app
+- 🧑‍💻 **Admin Dashboard**  
+  Private admin portal for managing content securely (RLS protected).
 
-Continue building your app on:
+- 📸 **Media Uploads**  
+  Integration with Supabase storage for media assets (images/videos).
 
-**[https://v0.dev/chat/projects/xHB98a9NPGn](https://v0.dev/chat/projects/xHB98a9NPGn)**
+- 🔐 **Authentication**  
+  Uses Supabase Auth to ensure secure access for admins and contributors.
 
-## How It Works
+- 📱 **Responsive Design**  
+  Fully mobile-friendly and optimized for performance.
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+---
+
+## 🚀 Tech Stack
+
+| Layer       | Tech                        |
+|-------------|-----------------------------|
+| Frontend    | Next.js (App Router)        |
+| Backend     | Supabase (PostgreSQL, Auth, Storage) |
+| Styling     | Tailwind CSS, shadcn/ui     |
+| Deployment  | Vercel                      |
+
+---
+
+## 📦 Installation (Local Development)
+
+```bash
+# Clone the repository
+git clone https://github.com/andareomondi/aicmacedonia.git
+cd aicmacedonia
+
+# Install dependencies
+pnpm install  # or npm install or yarn
+
+# Add environment variables
+cp .env.example .env.local
+# Fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
