@@ -6,9 +6,9 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
 const slides = [
-  { src: "/placeholder.svg?width=1200&height=600", alt: "Sponsor 1" },
-  { src: "/placeholder.svg?width=1200&height=600", alt: "Sponsor 2" },
-  { src: "/placeholder.svg?width=1200&height=600", alt: "Sponsor 3" },
+  { src: "https://picsum.photos/seed/church/1200/600", alt: "Convony of Hope" },
+  { src: "https://picsum.photos/seed/church/1200/600", alt: "Aspire to Inspire" },
+  { src: "https://picsum.photos/seed/church/1200/600", alt: "AIC Kasina DCC" },
 ]
 
 export function SponsorshipSlideshow() {

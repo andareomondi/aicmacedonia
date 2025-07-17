@@ -16,7 +16,7 @@ export function Hero() {
           "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://picsum.photos/seed/church/1920/1080')",
       }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 mb-5">
         <div className="text-center pt-8">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <Badge className="mb-4 bg-gradient-to-r from-pink-500 to-blue-500 text-white px-4 py-2">
@@ -70,7 +70,7 @@ export function Hero() {
               <CardContent className="p-6 text-center">
                 <Clock className="h-8 w-8 text-pink-300 mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Service Times</h3>
-                <p className="text-sm text-gray-200">Sunday 9:00 AM & 11:00 AM</p>
+                <p className="text-sm text-gray-200">Sunday 9:00 AM & 10:30 AM</p>
               </CardContent>
             </Card>
 
@@ -86,7 +86,11 @@ export function Hero() {
               <CardContent className="p-6 text-center">
                 <Heart className="h-8 w-8 text-pink-300 mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Mission</h3>
-                <p className="text-sm text-gray-200">Spreading God's love & grace</p>
+                <p className="text-sm text-gray-200">
+                  Commited in doing Christian
+                  reconstruction which involves creation of mandates (Gen 1:26)
+                  and the great commission (Matt 28: 18)
+                </p>
               </CardContent>
             </Card>
           </motion.div>

@@ -7,6 +7,7 @@ import { UpcomingEvents } from "@/components/upcoming-events"
 import { ChurchLocationMap } from "@/components/church-location-map"
 import { TodayEventsMarquee } from "@/components/today-events-marquee"
 import { BackToTop } from "@/components/back-to-top"
+import { SponsorshipSlideshow } from "@/components/sponsorship-slideshow"
 
 export default function HomePage() {
   return (
@@ -17,6 +18,7 @@ export default function HomePage() {
       <Leadership />
       <Departments />
       <Choirs />
+      <SponsorshipSlideshow />
       <UpcomingEvents />
       <ChurchLocationMap />
       <BackToTop />
