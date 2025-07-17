@@ -7,7 +7,7 @@ export default function AboutPage() {
   return (
     <div className="container mx-auto px-4 py-12 pt-28">
       <section className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">About AIC Macedonia</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">About Us</h1>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
           African Inland Church - Macedonia is a vibrant community dedicated to spreading the love of Christ and serving
           our neighbors.
