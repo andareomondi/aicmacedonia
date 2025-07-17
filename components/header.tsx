@@ -27,6 +27,7 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -69,6 +70,17 @@ export function Header() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      setIsScrolled(scrollTop > 10)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) {
@@ -87,7 +99,13 @@ export function Header() {
   }
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white shadow-lg">
+    <header
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20"
+          : "bg-white/70 backdrop-blur-sm shadow-sm"
+      }`}
+    >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -172,14 +190,14 @@ export function Header() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-gray-200"
+              className="md:hidden border-t border-gray-200/50"
             >
-              <div className="py-4 space-y-2">
+              <div className="py-4 space-y-2 bg-white/90 backdrop-blur-sm rounded-b-lg">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100/70 rounded-md transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.name}
@@ -188,14 +206,14 @@ export function Header() {
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="flex items-center space-x-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 text-purple-600 hover:bg-purple-50/70 rounded-md transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     <Shield className="h-4 w-4" />
                     <span>Admin</span>
                   </Link>
                 )}
-                <div className="px-4 pt-4 border-t border-gray-100">
+                <div className="px-4 pt-4 border-t border-gray-100/50">
                   {loading ? (
                     <div className="w-full h-9 bg-gray-200 animate-pulse rounded-md"></div>
                   ) : user ? (
