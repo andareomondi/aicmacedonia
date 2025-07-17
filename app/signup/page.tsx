@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Church, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase-client"
-import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 
 export default function SignupPage() {
@@ -18,7 +17,6 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -45,8 +43,6 @@ export default function SignupPage() {
         title: "Signup Successful",
         description: "Please check your email to confirm your account.",
       })
-      // Optionally redirect to a confirmation message page
-      router.push("/login?message=Check your email for a confirmation link.")
     }
     setLoading(false)
   }
