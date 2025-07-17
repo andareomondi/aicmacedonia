@@ -45,8 +45,6 @@ export default function SignupPage() {
         title: "Signup Successful",
         description: "Please check your email to confirm your account.",
       })
-      // Optionally redirect to a confirmation message page
-      router.push("/login?message=Check your email for a confirmation link.")
     }
     setLoading(false)
   }
