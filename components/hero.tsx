@@ -87,9 +87,7 @@ export function Hero() {
                 <Heart className="h-8 w-8 text-pink-300 mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Mission</h3>
                 <p className="text-sm text-gray-200">
-                  Commited in doing Christian
-                  reconstruction which involves creation of mandates (Gen 1:26)
-                  and the great commission (Matt 28: 18)
+                  Spreading the Word and love
                 </p>
               </CardContent>
             </Card>

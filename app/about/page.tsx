@@ -24,8 +24,9 @@ export default function AboutPage() {
           <CardContent>
             <h3 className="text-xl font-semibold mb-2">Mission</h3>
             <p className="text-gray-700 mb-4">
-              To glorify God by making disciples of Jesus Christ who are transformed by the Gospel, committed to
-              community, and engaged in mission.
+              AIC Macedonia is a Christian family committed in doing Christian
+              reconstruction which involves creation of mandates (Gen 1:26)
+              and the great commission (Matt 28: 18).
             </p>
             <h3 className="text-xl font-semibold mb-2">Vision</h3>
             <p className="text-gray-700">
