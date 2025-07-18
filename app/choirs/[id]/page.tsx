@@ -26,9 +26,17 @@ interface Choir {
   created_at: string
 }
 
+interface VideoInfo {
+  id: string
+  title: string
+  url: string
+}
+
 export default function ChoirDetailPage() {
   const [choir, setChoir] = useState<Choir | null>(null)
+  const [videoTitles, setVideoTitles] = useState<VideoInfo[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingTitles, setLoadingTitles] = useState(false)
   const params = useParams()
   const router = useRouter()
   const choirId = params.id as string
@@ -36,6 +44,12 @@ export default function ChoirDetailPage() {
   useEffect(() => {
     fetchChoir()
   }, [choirId])
+
+  useEffect(() => {
+    if (choir?.youtube_videos && choir.youtube_videos.length > 0) {
+      fetchVideoTitles(choir.youtube_videos)
+    }
+  }, [choir])
 
   const fetchChoir = async () => {
     try {
@@ -57,14 +71,51 @@ export default function ChoirDetailPage() {
     return match && match[2].length === 11 ? match[2] : null
   }
 
-  const getVideoTitle = (url: string, index: number) => {
-    // You could enhance this to fetch actual video titles from YouTube API
-    return `Performance ${index + 1}`
+  const fetchVideoTitles = async (videoUrls: string[]) => {
+    setLoadingTitles(true)
+    const videoInfos: VideoInfo[] = []
+
+    for (const url of videoUrls) {
+      const videoId = getYouTubeVideoId(url)
+      if (videoId) {
+        try {
+          // Using YouTube oEmbed API to get video title
+          const response = await fetch(
+            `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+          )
+          if (response.ok) {
+            const data = await response.json()
+            videoInfos.push({
+              id: videoId,
+              title: data.title || `${choir?.name} Performance`,
+              url: url,
+            })
+          } else {
+            // Fallback if API fails
+            videoInfos.push({
+              id: videoId,
+              title: `${choir?.name} Performance`,
+              url: url,
+            })
+          }
+        } catch (error) {
+          console.error("Error fetching video title:", error)
+          videoInfos.push({
+            id: videoId,
+            title: `${choir?.name} Performance`,
+            url: url,
+          })
+        }
+      }
+    }
+
+    setVideoTitles(videoInfos)
+    setLoadingTitles(false)
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="pt-20 min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -72,11 +123,16 @@ export default function ChoirDetailPage() {
 
   if (!choir) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="pt-20 min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="text-center">
+          <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Choir Not Found</h1>
+          <p className="text-gray-600 mb-4">The choir you're looking for doesn't exist.</p>
           <Link href="/choirs">
-            <Button>Back to Choirs</Button>
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Choirs
+            </Button>
           </Link>
         </div>
       </div>
@@ -97,7 +153,12 @@ export default function ChoirDetailPage() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
                 {choir.name}
               </h1>
-              <p className="text-gray-600 mt-2">Church Choir</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant={choir.is_active ? "default" : "secondary"}>
+                  {choir.is_active ? "Active" : "Inactive"}
+                </Badge>
+                <span className="text-gray-500 text-sm">Established {new Date(choir.created_at).getFullYear()}</span>
+              </div>
             </div>
           </div>
 
@@ -105,143 +166,188 @@ export default function ChoirDetailPage() {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Choir Image */}
-              <Card>
-                <div className="relative overflow-hidden rounded-t-lg">
-                  <Image
-                    src={choir.image_url || "/placeholder.jpg"}
-                    alt={choir.name}
-                    width={800}
-                    height={400}
-                    className="w-full h-64 object-cover"
-                  />
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-gradient-to-r from-pink-500 to-blue-500 text-white">
-                      <Music className="h-3 w-3 mr-1" />
-                      Active Choir
-                    </Badge>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+              >
+                <Card className="overflow-hidden">
+                  <div className="relative overflow-hidden">
+                    <Image
+                      src={choir.image_url || "/placeholder.jpg"}
+                      alt={choir.name}
+                      width={800}
+                      height={400}
+                      className="w-full h-64 md:h-80 object-cover"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <Badge className="bg-gradient-to-r from-pink-500 to-blue-500 text-white">
+                        <Music className="h-3 w-3 mr-1" />
+                        Active Choir
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">About {choir.name}</h2>
-                  <p className="text-gray-600 leading-relaxed">{choir.description}</p>
-                </CardContent>
-              </Card>
+                  <CardContent className="p-6">
+                    <h2 className="text-2xl font-bold mb-4">About {choir.name}</h2>
+                    <p className="text-gray-600 leading-relaxed">{choir.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
               {/* YouTube Videos */}
               {choir.youtube_videos && choir.youtube_videos.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Play className="h-5 w-5" />
-                      Performances
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {choir.youtube_videos.map((videoUrl, index) => {
-                        const videoId = getYouTubeVideoId(videoUrl)
-                        if (!videoId) return null
-
-                        return (
-                          <div key={index} className="space-y-2">
-                            <h3 className="font-semibold text-lg">{getVideoTitle(videoUrl, index)}</h3>
-                            <div className="relative aspect-video rounded-lg overflow-hidden">
-                              <iframe
-                                src={`https://www.youtube.com/embed/${videoId}`}
-                                title={`${choir.name} - Performance ${index + 1}`}
-                                className="w-full h-full"
-                                allowFullScreen
-                              />
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Play className="h-5 w-5" />
+                        Performances ({choir.youtube_videos.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingTitles ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                          <span className="ml-2 text-gray-600">Loading video titles...</span>
+                        </div>
+                      ) : (
+                        <div className="space-y-8">
+                          {videoTitles.map((video, index) => (
+                            <div key={video.id} className="space-y-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h3 className="font-semibold text-lg text-gray-900">{video.title}</h3>
+                                  <p className="text-sm text-gray-500">Performance #{index + 1}</p>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  YouTube
+                                </Badge>
+                              </div>
+                              <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${video.id}`}
+                                  title={video.title}
+                                  className="w-full h-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
                             </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               )}
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Leader Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Choir Leader
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="relative">
-                      <Image
-                        src={choir.leader_image_url || "/placeholder-user.jpg"}
-                        alt={choir.leader_name}
-                        width={60}
-                        height={60}
-                        className="w-15 h-15 rounded-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{choir.leader_name}</h3>
-                      <p className="text-gray-600">Choir Director</p>
-                    </div>
-                  </div>
-
-                  {choir.leader_phone && (
-                    <div className="flex items-center space-x-3">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      <a href={`tel:${choir.leader_phone}`} className="text-blue-600 hover:underline">
-                        {choir.leader_phone}
-                      </a>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Meeting Schedule */}
-              {choir.meeting_day && choir.meeting_time && (
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5" />
-                      Schedule
+                      <Users className="h-5 w-5" />
+                      Choir Leader
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Day:</span>
-                        <span className="font-semibold">{choir.meeting_day}s</span>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <Image
+                          src={choir.leader_image_url || "/placeholder-user.jpg"}
+                          alt={choir.leader_name}
+                          width={60}
+                          height={60}
+                          className="w-15 h-15 rounded-full object-cover border-2 border-gray-200"
+                        />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Time:</span>
-                        <span className="font-semibold">{choir.meeting_time}</span>
+                      <div>
+                        <h3 className="font-semibold text-lg">{choir.leader_name}</h3>
+                        <p className="text-gray-600">Choir Director</p>
                       </div>
                     </div>
+
+                    {choir.leader_phone && (
+                      <div className="flex items-center space-x-3 pt-2">
+                        <Phone className="h-4 w-4 text-gray-500" />
+                        <a href={`tel:${choir.leader_phone}`} className="text-blue-600 hover:underline font-medium">
+                          {choir.leader_phone}
+                        </a>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
+              </motion.div>
+
+              {/* Meeting Schedule */}
+              {(choir.meeting_day || choir.meeting_time) && (
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5" />
+                        Schedule
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {choir.meeting_day && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Day:</span>
+                            <span className="font-semibold">{choir.meeting_day}s</span>
+                          </div>
+                        )}
+                        {choir.meeting_time && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Time:</span>
+                            <span className="font-semibold">{choir.meeting_time}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               )}
 
               {/* Contact Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Get Involved</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600 text-sm">
-                    Interested in joining {choir.name}? Contact our choir leader to learn more about auditions and
-                    rehearsal schedules.
-                  </p>
-                  {choir.leader_phone && (
-                    <Button className="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600">
-                      <Phone className="h-4 w-4 mr-2" />
-                      <a href={`tel:${choir.leader_phone}`}>Call {choir.leader_name}</a>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Get Involved</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-600 text-sm">
+                      Interested in joining {choir.name}? Contact our choir leader to learn more about auditions and
+                      rehearsal schedules.
+                    </p>
+                    {choir.leader_phone && (
+                      <Button className="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600">
+                        <Phone className="h-4 w-4 mr-2" />
+                        <a href={`tel:${choir.leader_phone}`}>Call {choir.leader_name}</a>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
           </div>
         </motion.div>
