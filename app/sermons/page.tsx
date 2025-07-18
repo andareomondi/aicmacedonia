@@ -1,74 +1,49 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Play, Calendar, Clock, User } from "lucide-react"
+import { Search, Play, Calendar, Clock, User, Loader2 } from "lucide-react"
+import { createClient } from "@/lib/supabase-client"
 
-const sermons = [
-  {
-    id: 1,
-    title: "Walking in Faith",
-    pastor: "Pastor Justus Mutuku",
-    date: "2024-01-14",
-    duration: "45 min",
-    youtube: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Faith",
-  },
-  {
-    id: 2,
-    title: "The Power of Prayer",
-    pastor: "Pastor Mary Mutuko",
-    date: "2024-01-07",
-    duration: "38 min",
-    youtube: "https://www.youtube.com/embed/oHg5SJYRHA0",
-    category: "Prayer",
-  },
-  {
-    id: 3,
-    title: "Youth and Purpose",
-    pastor: "Pastor Josiah Nicolahs",
-    date: "2023-12-31",
-    duration: "42 min",
-    youtube: "https://www.youtube.com/embed/EE-xtCF3T94",
-    category: "Youth",
-  },
-  {
-    id: 4,
-    title: "Love in Action",
-    pastor: "Pastor Justus Mutuku",
-    date: "2023-12-24",
-    duration: "50 min",
-    youtube: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    category: "Love",
-  },
-  {
-    id: 5,
-    title: "Hope for Tomorrow",
-    pastor: "Pastor Mary Mutuko",
-    date: "2023-12-17",
-    duration: "35 min",
-    youtube: "https://www.youtube.com/embed/oHg5SJYRHA0",
-    category: "Hope",
-  },
-  {
-    id: 6,
-    title: "Building Character",
-    pastor: "Pastor Josiah Nicolahs",
-    date: "2023-12-10",
-    duration: "40 min",
-    youtube: "https://www.youtube.com/embed/EE-xtCF3T94",
-    category: "Character",
-  },
-]
+interface Sermon {
+  id: number
+  title: string
+  pastor: string
+  date_preached: string
+  duration: string
+  youtube_url: string
+  category: string
+}
 
 export default function SermonsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPastor, setSelectedPastor] = useState("all")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [sermons, setSermons] = useState<Sermon[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    fetchSermons()
+  }, [])
+
+  const fetchSermons = async () => {
+    try {
+      const { data, error } = await supabase.from("sermons").select("*").order("date_preached", { ascending: false })
+
+      if (error) throw error
+      setSermons(data || [])
+    } catch (error) {
+      console.error("Error fetching sermons:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredSermons = sermons.filter((sermon) => {
     const matchesSearch =
@@ -82,6 +57,24 @@ export default function SermonsPage() {
 
   const pastors = [...new Set(sermons.map((s) => s.pastor))]
   const categories = [...new Set(sermons.map((s) => s.category))]
+
+  const handleWatchSermon = (youtubeUrl: string) => {
+    // Convert embed URL to watch URL if needed
+    let watchUrl = youtubeUrl
+    if (youtubeUrl.includes("/embed/")) {
+      const videoId = youtubeUrl.split("/embed/")[1].split("?")[0]
+      watchUrl = `https://www.youtube.com/watch?v=${videoId}`
+    }
+    window.open(watchUrl, "_blank")
+  }
+
+  if (loading) {
+    return (
+      <div className="pt-20 flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="pt-20">
@@ -166,7 +159,7 @@ export default function SermonsPage() {
                   <CardContent className="p-6">
                     <div className="aspect-video mb-4 rounded-lg overflow-hidden">
                       <iframe
-                        src={sermon.youtube}
+                        src={sermon.youtube_url}
                         title={sermon.title}
                         className="w-full h-full"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -183,7 +176,7 @@ export default function SermonsPage() {
                       </div>
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-pink-500" />
-                        {new Date(sermon.date).toLocaleDateString()}
+                        {new Date(sermon.date_preached).toLocaleDateString()}
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2 text-blue-500" />
@@ -195,7 +188,11 @@ export default function SermonsPage() {
                       <span className="px-3 py-1 bg-gradient-to-r from-pink-100 to-blue-100 text-pink-700 dark:text-pink-800 rounded-full text-xs font-medium">
                         {sermon.category}
                       </span>
-                      <Button size="sm" className="bg-gradient-to-r from-pink-500 to-blue-500">
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-pink-500 to-blue-500"
+                        onClick={() => handleWatchSermon(sermon.youtube_url)}
+                      >
                         <Play className="h-4 w-4 mr-1" />
                         Watch
                       </Button>
@@ -206,7 +203,7 @@ export default function SermonsPage() {
             ))}
           </div>
 
-          {filteredSermons.length === 0 && (
+          {filteredSermons.length === 0 && !loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
               <p className="text-gray-500 dark:text-gray-400 text-lg">No sermons found matching your criteria.</p>
             </motion.div>
@@ -216,3 +213,4 @@ export default function SermonsPage() {
     </div>
   )
 }
+
