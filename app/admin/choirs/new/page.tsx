@@ -10,13 +10,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Plus, Trash2, Upload, X } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function NewChoirPage() {
   const [loading, setLoading] = useState(false)
+  const [uploadingLeaderImage, setUploadingLeaderImage] = useState(false)
+  const [uploadingChoirImage, setUploadingChoirImage] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -25,9 +28,96 @@ export default function NewChoirPage() {
     leader_image_url: "",
     image_url: "",
     youtube_videos: [""],
+    meeting_day: "",
+    meeting_time: "",
   })
   const router = useRouter()
   const { toast } = useToast()
+
+  const handleImageUpload = async (file: File, type: "leader" | "choir") => {
+    try {
+      if (type === "leader") {
+        setUploadingLeaderImage(true)
+      } else {
+        setUploadingChoirImage(true)
+      }
+
+      // Create a unique filename
+      const fileExt = file.name.split(".").pop()
+      const fileName = `${type}-${Date.now()}.${fileExt}`
+      const filePath = `choir-images/${fileName}`
+
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage.from("images").upload(filePath, file)
+
+      if (error) throw error
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("images").getPublicUrl(filePath)
+
+      // Update form data
+      if (type === "leader") {
+        setFormData({ ...formData, leader_image_url: publicUrl })
+      } else {
+        setFormData({ ...formData, image_url: publicUrl })
+      }
+
+      toast({
+        title: "Success",
+        description: `${type === "leader" ? "Leader" : "Choir"} image uploaded successfully!`,
+      })
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      toast({
+        title: "Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      if (type === "leader") {
+        setUploadingLeaderImage(false)
+      } else {
+        setUploadingChoirImage(false)
+      }
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "leader" | "choir") => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      handleImageUpload(file, type)
+    }
+  }
+
+  const removeImage = (type: "leader" | "choir") => {
+    if (type === "leader") {
+      setFormData({ ...formData, leader_image_url: "" })
+    } else {
+      setFormData({ ...formData, image_url: "" })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -154,24 +244,127 @@ export default function NewChoirPage() {
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="leader_image_url">Leader Image URL</Label>
-                  <Input
-                    id="leader_image_url"
-                    value={formData.leader_image_url}
-                    onChange={(e) => setFormData({ ...formData, leader_image_url: e.target.value })}
-                    placeholder="Enter leader image URL"
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="meeting_day">Meeting Day</Label>
+                    <Input
+                      id="meeting_day"
+                      value={formData.meeting_day}
+                      onChange={(e) => setFormData({ ...formData, meeting_day: e.target.value })}
+                      placeholder="e.g., Sunday"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="meeting_time">Meeting Time</Label>
+                    <Input
+                      id="meeting_time"
+                      value={formData.meeting_time}
+                      onChange={(e) => setFormData({ ...formData, meeting_time: e.target.value })}
+                      placeholder="e.g., 10:00 AM"
+                    />
+                  </div>
                 </div>
 
+                {/* Leader Image Upload */}
                 <div>
-                  <Label htmlFor="image_url">Choir Image URL</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    placeholder="Enter choir image URL"
-                  />
+                  <Label>Leader Image</Label>
+                  <div className="mt-2">
+                    {formData.leader_image_url ? (
+                      <div className="relative inline-block">
+                        <Image
+                          src={formData.leader_image_url || "/placeholder.svg"}
+                          alt="Leader preview"
+                          width={100}
+                          height={100}
+                          className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => removeImage("leader")}
+                          size="sm"
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "leader")}
+                          className="hidden"
+                          id="leader-image-upload"
+                        />
+                        <label htmlFor="leader-image-upload">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={uploadingLeaderImage}
+                            className="cursor-pointer bg-transparent"
+                            asChild
+                          >
+                            <span>
+                              <Upload className="h-4 w-4 mr-2" />
+                              {uploadingLeaderImage ? "Uploading..." : "Upload Leader Image"}
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Choir Image Upload */}
+                <div>
+                  <Label>Choir Image</Label>
+                  <div className="mt-2">
+                    {formData.image_url ? (
+                      <div className="relative inline-block">
+                        <Image
+                          src={formData.image_url || "/placeholder.svg"}
+                          alt="Choir preview"
+                          width={200}
+                          height={120}
+                          className="w-48 h-28 rounded-lg object-cover border-2 border-gray-200"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => removeImage("choir")}
+                          size="sm"
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "choir")}
+                          className="hidden"
+                          id="choir-image-upload"
+                        />
+                        <label htmlFor="choir-image-upload">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={uploadingChoirImage}
+                            className="cursor-pointer bg-transparent"
+                            asChild
+                          >
+                            <span>
+                              <Upload className="h-4 w-4 mr-2" />
+                              {uploadingChoirImage ? "Uploading..." : "Upload Choir Image"}
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -220,3 +413,4 @@ export default function NewChoirPage() {
     </div>
   )
 }
+

@@ -1,12 +1,11 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Music, Users, Calendar, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Music, Users, Clock, Phone } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
 import Link from "next/link"
 import Image from "next/image"
@@ -53,9 +52,17 @@ export function Choirs() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-white dark:bg-gray-900" id="choirs">
+      <section className="py-20 bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+              Our Choirs
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Discover the beautiful voices that lift our spirits in worship and praise
+            </p>
+          </div>
+          <div className="flex justify-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
           </div>
         </div>
@@ -64,101 +71,90 @@ export function Choirs() {
   }
 
   return (
-    <section className="py-20 bg-white dark:bg-gray-900" id="choirs">
+    <section className="py-20 bg-gradient-to-br from-pink-50 to-blue-50">
       <div className="container mx-auto px-4">
-        <motion.h2
-          className="text-4xl md:text-5xl font-bold text-center mb-14 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent"
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          className="text-center mb-16"
         >
-          Our Choirs
-        </motion.h2>
+          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+            Our Choirs
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Discover the beautiful voices that lift our spirits in worship and praise
+          </p>
+        </motion.div>
 
         {choirs.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-12">
             <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-xl text-gray-500">No active choirs at the moment</p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Choirs Available</h3>
+            <p className="text-gray-500">Check back later for choir information.</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {choirs.map((choir, idx) => (
+            {choirs.map((choir, index) => (
               <motion.div
                 key={choir.id}
                 initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: idx * 0.15 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
               >
                 <Link href={`/choirs/${choir.id}`}>
-                  <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                    <div className="relative h-48 overflow-hidden rounded-t-lg">
-                      {choir.image_url ? (
-                        <Image
-                          src={choir.image_url || "/placeholder.svg"}
-                          alt={choir.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center">
-                          <Music className="h-16 w-16 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
+                  <Card className="group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                    <div className="relative overflow-hidden rounded-t-lg">
+                      <Image
+                        src={choir.image_url || "/placeholder.jpg"}
+                        alt={choir.name}
+                        width={400}
+                        height={250}
+                        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
                       <div className="absolute top-4 right-4">
-                        <Badge variant="secondary" className="bg-white/90">
+                        <Badge className="bg-gradient-to-r from-pink-500 to-blue-500 text-white">
+                          <Music className="h-3 w-3 mr-1" />
                           Active
                         </Badge>
                       </div>
                     </div>
+                    <CardContent className="p-6">
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors">
+                        {choir.name}
+                      </h3>
+                      <p className="text-gray-600 mb-4 line-clamp-2">{choir.description}</p>
 
-                    <CardContent className="p-6 space-y-4">
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
-                          {choir.name}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">{choir.description}</p>
-                      </div>
-
-                      <div className="space-y-2">
-                        {choir.leader_name && (
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Users className="h-4 w-4" />
-                            <span>Led by {choir.leader_name}</span>
-                          </div>
-                        )}
-
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Users className="h-4 w-4 mr-2" />
+                          Led by {choir.leader_name}
+                        </div>
                         {choir.meeting_day && choir.meeting_time && (
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {choir.meeting_day} at {choir.meeting_time}
-                            </span>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Clock className="h-4 w-4 mr-2" />
+                            {choir.meeting_day}s at {choir.meeting_time}
                           </div>
                         )}
-
-                        {choir.youtube_videos && choir.youtube_videos.length > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Music className="h-4 w-4" />
-                            <span>
-                              {choir.youtube_videos.length} video{choir.youtube_videos.length > 1 ? "s" : ""}
-                            </span>
+                        {choir.leader_phone && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Phone className="h-4 w-4 mr-2" />
+                            {choir.leader_phone}
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between pt-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="group-hover:bg-blue-50 group-hover:border-blue-200 bg-transparent"
-                        >
-                          Learn More
-                          <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </div>
+                      {choir.youtube_videos && choir.youtube_videos.length > 0 && (
+                        <div className="mb-4">
+                          <Badge variant="outline" className="text-xs">
+                            {choir.youtube_videos.length} Video{choir.youtube_videos.length !== 1 ? "s" : ""}
+                          </Badge>
+                        </div>
+                      )}
+
+                      <Button className="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white">
+                        Learn More
+                      </Button>
                     </CardContent>
                   </Card>
                 </Link>
@@ -170,4 +166,6 @@ export function Choirs() {
     </section>
   )
 }
+
+export default Choirs
 
