@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,29 +12,47 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { supabase } from "@/lib/supabase-client"
+
+interface Notification {
+  id: number
+  title: string
+  message: string
+  created_at: string
+  read: boolean
+}
 
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New Sermon Available",
-      message: "Pastor Justus's latest sermon on faith is now available",
-      time: "2 hours ago",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "Upcoming Event",
-      message: "Youth fellowship this Saturday at 2 PM",
-      time: "1 day ago",
-      read: false,
-    },
-  ])
-
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const unreadCount = notifications.filter((n) => !n.read).length
 
-  const markAsRead = (id: number) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  // Fetch notifications from Supabase
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10)
+
+      if (error) console.error("Error fetching notifications:", error)
+      else setNotifications(data || [])
+    }
+
+    fetchNotifications()
+  }, [])
+
+  const markAsRead = async (id: number) => {
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", id)
+
+    if (!error) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      )
+    }
   }
 
   return (
@@ -66,10 +84,16 @@ export function NotificationBell() {
             >
               <div className="flex items-center justify-between w-full mb-1">
                 <span className="font-medium text-sm">{notification.title}</span>
-                {!notification.read && <div className="h-2 w-2 bg-blue-500 rounded-full" />}
+                {!notification.read && (
+                  <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                )}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{notification.message}</p>
-              <span className="text-xs text-gray-500">{notification.time}</span>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                {notification.message}
+              </p>
+              <span className="text-xs text-gray-500">
+                {new Date(notification.created_at).toLocaleString()}
+              </span>
             </DropdownMenuItem>
           ))
         )}
@@ -77,3 +101,4 @@ export function NotificationBell() {
     </DropdownMenu>
   )
 }
+
