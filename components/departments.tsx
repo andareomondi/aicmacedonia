@@ -62,13 +62,7 @@ const cedGroups = [
     description: "Fellowship and spiritual development for men of the church",
     href: "/departments/ced/Men Communion",
     image: "https://picsum.photos/400/250?random=5",
-  },
-  {
-    name: "Praise and Worship",
-    description: "Leading the congregation in worship and praise",
-    href: "/departments/ced/Praise and Worship",
-    image: "https://picsum.photos/400/250?random=6",
-  },
+  }
 ]
 
 export function Departments() {
