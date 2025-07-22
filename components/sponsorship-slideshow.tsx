@@ -6,8 +6,8 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
 const slides = [
-  { src: "https://picsum.photos/seed/church/1200/600", alt: "Convony of Hope" },
-  { src: "https://picsum.photos/seed/church/1200/600", alt: "Aspire to Inspire" },
+  { src: "/sponsors/convoy.webp", alt: "Convony of Hope" },
+  { src: "/sponsors/convoy2.jpeg", alt: "Convoy of Hope" },
   { src: "https://picsum.photos/seed/church/1200/600", alt: "AIC Kasina DCC" },
 ]
 
