@@ -17,8 +17,7 @@ export const metadata: Metadata = {
     "A local council church under AIC Kasina, serving our community in Athiriver, Kenya with love, faith, and fellowship.",
   manifest: "/manifest.json",
   themeColor: "#3b82f6",
-  viewport: "width=device-width, initial-scale=1",
-    generator: 'v0.dev'
+  viewport: "width=device-width, initial-scale=1"
 }
 
 export default function RootLayout({
