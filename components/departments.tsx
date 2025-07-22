@@ -12,7 +12,7 @@ const departments = [
     name: "Ushering Department",
     leader: { name: "Grace Mwikali", phone: "+254 712 000 111", img: "/placeholder.svg?height=120&width=120" },
     description: "Welcoming congregants with warmth and ensuring services run smoothly from the door to the sanctuary.",
-    image: "/placeholder.svg?height=300&width=500",
+    image: "/images/prayercell.jpg",
   },
   {
     id: "pastoral",
@@ -20,7 +20,7 @@ const departments = [
     leader: { name: "Peter Kilonzo", phone: "+254 712 000 222", img: "/placeholder.svg?height=120&width=120" },
     description:
       "Providing spiritual guidance, counselling and prayer support for the church family throughout the week.",
-    image: "/placeholder.svg?height=300&width=500",
+    image: "/images/jesus.jpg",
   },
   {
     id: "ced",
@@ -28,7 +28,7 @@ const departments = [
     leader: { name: "Rose Ndunge", phone: "+254 712 000 333", img: "/placeholder.svg?height=120&width=120" },
     description:
       "Discipling all age-groups through Bible study, battalion & cadet scouts, youth, Ushirika wa Wake, Men communion and Praise & Worship.",
-    image: "/placeholder.svg?height=300&width=500",
+    image: "/images/ced.jpg",
   },
 ]
 
@@ -37,31 +37,31 @@ const cedGroups = [
     name: "Battalion",
     description: "Church scouts program for boys - building character and faith",
     href: "/departments/ced/Battalion",
-    image: "https://picsum.photos/400/250?random=1",
+    image: "/images/battalion.jpg",
   },
   {
     name: "Cadet",
     description: "Church scouts program for girls - nurturing leadership and spirituality",
     href: "/departments/ced/Cadet",
-    image: "https://picsum.photos/400/250?random=2",
+    image: "/images/cadet.jpg",
   },
   {
     name: "Youth",
     description: "Programs for senior and junior teens - growing in faith together",
     href: "/departments/ced/Youth",
-    image: "https://picsum.photos/400/250?random=3",
+    image: "/images/youth.jpg",
   },
   {
     name: "Ushirika wa Wake",
     description: "Ladies communion - fellowship and spiritual growth for women",
     href: "/departments/ced/Ushirika wa Wake",
-    image: "https://picsum.photos/400/250?random=4",
+    image: "/images/wake.jpg",
   },
   {
     name: "Men Communion",
     description: "Fellowship and spiritual development for men of the church",
     href: "/departments/ced/Men Communion",
-    image: "https://picsum.photos/400/250?random=5",
+    image: "/images/wazee.jpg",
   }
 ]
 
@@ -94,8 +94,7 @@ export function Departments() {
                     {/* banner / group photo */}
                     <div
                       className="h-48 w-full rounded-md bg-cover bg-center"
-                      style={{ backgroundImage: `url('https://picsum.photos/500/300?random=${idx + 1}')` }}
-                    />
+                      style={{ backgroundImage: `url('${dept.image}')`, height: 300 }} />
                     <h3 className="text-2xl font-semibold">{dept.name}</h3>
                     <p className="text-gray-600 flex-1">{dept.description}</p>
 
@@ -152,8 +151,8 @@ export function Departments() {
                 <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer group border hover:border-blue-200">
                   <CardContent className="p-0">
                     <div
-                      className="h-40 w-full bg-cover bg-center rounded-t-lg"
-                      style={{ backgroundImage: `url('${group.image}')` }}
+                      className="h-40 w-full bg-cover bg-center rounded-t-lg "
+                      style={{ backgroundImage: `url('${group.image}')`, height: 300 }}
                     />
                     <div className="p-6">
                       <h4 className="text-lg font-semibold mb-2 text-gray-800 group-hover:text-blue-600 transition-colors">
