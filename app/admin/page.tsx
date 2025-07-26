@@ -135,34 +135,7 @@ export default function AdminDashboardPage() {
             </Button>
           </motion.div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Link href="/admin/users" passHref>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalMembers}</div>
-                  <p className="text-xs text-muted-foreground">Click to view all users</p>
-                </CardContent>
-              </Card>
-            </Link>
 
-            <Link href="/admin/users?role=admin" passHref>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.adminUsers}</div>
-                  <p className="text-xs text-muted-foreground">Click to view admin users</p>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
 
           {/* Admin Sections */}
           <motion.div
