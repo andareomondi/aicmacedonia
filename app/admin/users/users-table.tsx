@@ -124,9 +124,9 @@ export default function UsersTable({ initialUsers }: { initialUsers: User[] }) {
                       <AvatarFallback>
                         {user.user_metadata?.full_name
                           ? user.user_metadata.full_name
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
                           : user.email[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
