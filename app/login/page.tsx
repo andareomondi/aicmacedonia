@@ -9,39 +9,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Church, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase-client"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import { createBrowserClient } from "@supabase/ssr"
-import { getCookie, setCookie } from "cookies-next"
-import { Alert, AlertDescription } from "@/components/ui/alert" // Import Alert components
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons" // For an icon in the alert
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [showLoginError, setShowLoginError] = useState(false) // State for alert visibility
-  const [loginErrorMessage, setLoginErrorMessage] = useState("") // State for alert message
   const router = useRouter()
   const { toast } = useToast()
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (name: string) => getCookie(name),
-        set: (name: string, value: string, options: any) => setCookie(name, value, options),
-        remove: (name: string, options: any) => setCookie(name, "", options),
-      },
-    },
-  )
+  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setShowLoginError(false) // Reset alert visibility on new submission
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -49,15 +32,11 @@ export default function LoginPage() {
     })
 
     if (error) {
-      const errorMessage = "Invalid email or password. Please try again."
-      setLoginErrorMessage(errorMessage)
-      setShowLoginError(true) // Show the alert
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: error.message,
         variant: "destructive",
       })
-      console.error("Supabase login error:", error.message)
     } else {
       toast({
         title: "Login Successful",
@@ -87,12 +66,6 @@ export default function LoginPage() {
             <CardDescription>Sign in to your AIC Macedonia account</CardDescription>
           </CardHeader>
           <CardContent>
-            {showLoginError && (
-              <Alert variant="destructive" className="mb-4">
-                <ExclamationTriangleIcon className="h-4 w-4" />
-                <AlertDescription>{loginErrorMessage}</AlertDescription>
-              </Alert>
-            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -158,4 +131,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
