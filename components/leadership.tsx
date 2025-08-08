@@ -16,7 +16,7 @@ const leaders = [
       "Leading our congregation with wisdom and compassion, Pastor Justus has been instrumental in our church's growth and spiritual development.",
   },
   {
-    name: "Pastor Mary Mutuko",
+    name: "Pastor Mary Mutuku",
     role: "Assistant Pastor",
     image: "/placeholder.svg?height=200&width=200",
     phone: "+254 700 000 002",
