@@ -30,6 +30,14 @@ const departments = [
       "Discipling all age-groups through Bible study, battalion & cadet scouts, youth, Ushirika wa Wake, Men communion and Praise & Worship.",
     image: "/images/ced.jpg",
   },
+  {
+    id: "media",
+    name: "Media and IT",
+    leader: { name: "Simon Peter", phone: "+254 712 000 333", img: "/placeholder.svg?height=120&width=120" },
+    description:
+      "Capturing every momemnt of the God's ministry & spreading it further to the rest of the world.",
+    image: "/images/people.jpg",
+  }
 ]
 
 const cedGroups = [
