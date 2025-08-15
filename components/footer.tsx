@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Church, Facebook, Youtube, Mail, Phone, MapPin } from "lucide-react"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -9,7 +10,7 @@ export function Footer() {
           {/* Church Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <Church className="h-8 w-8 text-blue-400" />
+              <Image src="logo.ico" width={40} height={40} alt="AIC Macedonia Image" />
               <span className="text-xl font-bold">AIC Macedonia</span>
             </div>
             <p className="text-gray-300 mb-4">
