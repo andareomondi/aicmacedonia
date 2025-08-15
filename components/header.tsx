@@ -4,12 +4,13 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { NotificationBell } from "@/components/notification-bell"
-import { Menu, X, Church, LogOut, Shield } from "lucide-react"
+import { Menu, X, LogOut, Shield } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "@/lib/supabase-client"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import type { User } from "@supabase/supabase-js"
+import Image from "next/image"
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -100,17 +101,16 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20"
-          : "bg-white/70 backdrop-blur-sm shadow-sm"
-      }`}
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
+        ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20"
+        : "bg-white/70 backdrop-blur-sm shadow-sm"
+        }`}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Church className="h-8 w-8 text-blue-600" />
+            <Image src="logo.ico" width={40} height={40} alt="AIC Macedonia Image" />
             <span className="text-xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
               AIC Macedonia
             </span>
