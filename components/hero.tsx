@@ -13,7 +13,7 @@ export function Hero() {
       className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://picsum.photos/seed/church/1920/1080')",
+          "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/hero.jpg')",
       }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 mb-5">

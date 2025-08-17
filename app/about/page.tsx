@@ -48,10 +48,10 @@ export default function AboutPage() {
               the church has moved and grown, adapting to the needs of its community.
             </p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
-              <li>**AIC Citycartoon**: The initial establishment in Athiriver.</li>
-              <li>**AIC Mavoko**: Moved to an adjacent slum, Jamcity, continuing its ministry.</li>
+              <li><i className="font-bold">AIC Citycartoon</i>: The initial establishment in Athiriver.</li>
+              <li><i className="font-bold">AIC Mavoko</i>: Moved to an adjacent slum, Jamcity, continuing its ministry.</li>
               <li>
-                **AIC Macedonia (Greatwall)**: Two years ago, the church relocated to Greatwall, Athiriver, next to
+                <i className="font-bold">AIC Macedonia (Greatwall)</i>: Two years ago, the church relocated to Greatwall, Athiriver, next to
                 Mavuno Church, where it continues to thrive as a Local Council Church (LCC) under the District Church
                 Council (DCC) of AIC Kasina.
               </li>
@@ -80,31 +80,7 @@ export default function AboutPage() {
         </Card>
       </section>
 
-      <section className="text-center mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Community</h2>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          We are a diverse and welcoming family, united by faith and a desire to serve God and our community.
-        </p>
-        <div className="flex justify-center mt-8 space-x-4">
-          <img
-            src="https://picsum.photos/id/237/100/100"
-            alt="Community member 1"
-            className="w-24 h-24 rounded-full object-cover border-4 border-pink-300 shadow-md"
-          />
-          <img
-            src="https://picsum.photos/id/238/100/100"
-            alt="Community member 2"
-            className="w-24 h-24 rounded-full object-cover border-4 border-blue-300 shadow-md"
-          />
-          <img
-            src="https://picsum.photos/id/239/100/100"
-            alt="Community member 3"
-            className="w-24 h-24 rounded-full object-cover border-4 border-pink-300 shadow-md"
-          />
-        </div>
-      </section>
-
-      <Separator className="my-12" />
+      <Separator className="my-8" />
 
       <section className="text-center">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">Contact Us</h2>
@@ -114,7 +90,7 @@ export default function AboutPage() {
             <a href="mailto:info@aicmacedonia.org">Email Us</a>
           </Button>
           <Button variant="outline" className="border-pink-500 text-pink-600 hover:bg-pink-50 bg-transparent">
-            <a href="tel:+254712345678">Call Us</a>
+            <a href="tel:+254717740400">Call Us</a>
           </Button>
         </div>
       </section>

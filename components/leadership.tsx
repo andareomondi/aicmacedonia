@@ -10,7 +10,7 @@ const leaders = [
     name: "Pastor Justus Mutuku",
     role: "Lead Pastor",
     image: "/placeholder.svg?height=200&width=200",
-    phone: "+254 700 000 001",
+    phone: "+254 717 740 400",
     email: "justus.mutuku@aicmacedonia.org",
     description:
       "Leading our congregation with wisdom and compassion, Pastor Justus has been instrumental in our church's growth and spiritual development.",

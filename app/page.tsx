@@ -18,7 +18,6 @@ export default function HomePage() {
       <Leadership />
       <Departments />
       <Choirs />
-      <SponsorshipSlideshow />
       <UpcomingEvents />
       <ChurchLocationMap />
       <BackToTop />
