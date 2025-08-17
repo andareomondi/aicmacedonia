@@ -100,10 +100,8 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled
-        ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20"
-        : "bg-white/70 backdrop-blur-sm shadow-sm"
-        }`}
+      className={`fixed top-0 w-full z-50 transition-all duration-300  bg-white/50 backdrop-blur-sm shadow-sm rounded-b-md p-1"
+        `}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
@@ -191,7 +189,7 @@ export function Header() {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-gray-200/50"
             >
-              <div className="py-4 space-y-2 bg-white/90 backdrop-blur-sm rounded-b-lg">
+              <div className="p-5 m-2 space-y-2 bg-white/50 backdrop-blur-sm rounded-lg">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}

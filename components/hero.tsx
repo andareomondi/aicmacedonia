@@ -58,7 +58,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
           >
-            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300">
               <CardContent className="p-6 text-center">
                 <MapPin className="h-8 w-8 text-white mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Location</h3>
@@ -66,7 +66,7 @@ export function Hero() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300">
               <CardContent className="p-6 text-center">
                 <Clock className="h-8 w-8 text-pink-300 mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Service Times</h3>
@@ -74,7 +74,7 @@ export function Hero() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300">
               <CardContent className="p-6 text-center">
                 <Users className="h-8 w-8 text-blue-300 mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Community</h3>
@@ -82,7 +82,7 @@ export function Hero() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/20 backdrop-blur-md border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300">
               <CardContent className="p-6 text-center">
                 <Heart className="h-8 w-8 text-pink-300 mx-auto mb-3" />
                 <h3 className="font-semibold text-white mb-2">Mission</h3>
