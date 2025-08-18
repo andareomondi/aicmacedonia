@@ -31,7 +31,7 @@ const departments = [
     image: "/images/ced.jpg",
   },
   {
-    id: "media",
+    id: "ced/Media",
     name: "Media and IT",
     leader: { name: "Simon Peter", phone: "+254 712 000 333", img: "/placeholder.svg?height=120&width=120" },
     description:
