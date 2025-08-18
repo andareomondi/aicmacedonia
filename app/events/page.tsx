@@ -4,70 +4,8 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, MapPin, Clock } from "lucide-react"
-
-const events = [
-  {
-    id: 1,
-    title: "Youth Fellowship",
-    date: "2024-01-27",
-    time: "2:00 PM - 5:00 PM",
-    location: "Church Hall",
-    description: "Interactive Bible study, games, and fellowship for all youth members. Come and bring a friend!",
-    category: "Youth",
-    image: "https://picsum.photos/400/300?random=100",
-  },
-  {
-    id: 2,
-    title: "Praise & Worship Night",
-    date: "2024-02-02",
-    time: "6:00 PM - 9:00 PM",
-    location: "Main Sanctuary",
-    description:
-      "An evening of heartfelt praise and worship featuring all our choirs. Open to everyone in the community.",
-    category: "Worship",
-    image: "https://picsum.photos/400/300?random=101",
-  },
-  {
-    id: 3,
-    title: "Community Outreach",
-    date: "2024-02-10",
-    time: "9:00 AM - 3:00 PM",
-    location: "Jamcity, Athiriver",
-    description: "Join us as we serve the community with food donations, medical checkups, and prayer ministry.",
-    category: "Outreach",
-    image: "https://picsum.photos/400/300?random=102",
-  },
-  {
-    id: 4,
-    title: "Women's Conference",
-    date: "2024-02-17",
-    time: "8:00 AM - 4:00 PM",
-    location: "Main Sanctuary",
-    description: "Annual women's conference focusing on 'Women of Purpose'. Registration required.",
-    category: "Conference",
-    image: "https://picsum.photos/400/300?random=103",
-  },
-  {
-    id: 5,
-    title: "Men's Breakfast",
-    date: "2024-02-24",
-    time: "7:00 AM - 10:00 AM",
-    location: "Church Hall",
-    description: "Monthly men's fellowship over breakfast. Topic: 'Leading with Integrity'",
-    category: "Fellowship",
-    image: "https://picsum.photos/400/300?random=104",
-  },
-  {
-    id: 6,
-    title: "Children's Fun Day",
-    date: "2024-03-02",
-    time: "10:00 AM - 4:00 PM",
-    location: "Church Grounds",
-    description: "A day of fun activities, games, and Bible stories for children aged 3-12 years.",
-    category: "Children",
-    image: "https://picsum.photos/400/300?random=105",
-  },
-]
+import { createClient } from "@/lib/supabase-client"
+import React, { useState } from "react"
 
 const categoryColors = {
   Youth: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -79,6 +17,39 @@ const categoryColors = {
 }
 
 export default function EventsPage() {
+  const supabase = createClient()
+
+  const [events, setEvents] = useState([])
+  const fetchEvents = async () => {
+    const { data, error } = await supabase.from("events").select("*").order("date", { ascending: true })
+    if (error) {
+      console.error("Error fetching events:", error)
+      return []
+    }
+    return data
+  }
+  React.useEffect(() => {
+    const loadEvents = async () => {
+      const fetchedEvents = await fetchEvents()
+      setEvents(fetchedEvents)
+    }
+    loadEvents()
+  }, [])
+  if (!events || events.length === 0) {
+    return (
+      <div className="pt-20 flex items-center justify-center min-h-screen">
+        <p className="text-gray-500 dark:text-gray-400">No upcoming events at the moment.</p>
+      </div>
+    )
+  }
+  if (events.length === 0) {
+    return (
+      <div className="pt-20 flex items-center justify-center min-h-screen">
+        <p className="text-gray-500 dark:text-gray-400">Loading events...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="pt-20">
       <section className="py-20 bg-gradient-to-br from-pink-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -87,7 +58,7 @@ export default function EventsPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="text-center mb-16 p-2"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
               Upcoming Events

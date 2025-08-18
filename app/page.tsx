@@ -10,9 +10,9 @@ import { BackToTop } from "@/components/back-to-top"
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen">
-      <Hero />
+    <main className="min-h-screen ">
       <TodayEventsMarquee />
+      <Hero />
       <About />
       <Leadership />
       <Departments />
