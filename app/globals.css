@@ -5,9 +5,9 @@
 @layer base {
   :root {
     /* Light theme (default) */
-    --background: 0 24% 81.3%;
+    --background: 0 20.1% 87.8%;
     --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
+    --card: 0 20.1% 97.3%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
