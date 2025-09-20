@@ -8,6 +8,7 @@ import { BackgroundAnimation } from "@/components/background-animation"
 import { AuthGuard } from "@/components/auth-guard"
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 import { Toaster } from "@/components/ui/toaster"
+import { useTheme } from "next-themes"
 
 const inter = Inter({ subsets: ["latin"] })
 

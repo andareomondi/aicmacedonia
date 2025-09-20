@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import type { User } from "@supabase/supabase-js"
 import Image from "next/image"
+import { ThemeToggle } from "./theme-toggle"
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -124,6 +125,7 @@ export function Header() {
                 {item.name}
               </Link>
             ))}
+
             {isAdmin && (
               <Link
                 href="/admin"
@@ -138,6 +140,7 @@ export function Header() {
           {/* Right side items */}
           <div className="flex items-center space-x-4">
             <NotificationBell />
+            <ThemeToggle />
             <div className="hidden md:flex space-x-2">
               {loading ? (
                 <div className="w-20 h-9 bg-gray-200 animate-pulse rounded-md"></div>
@@ -172,7 +175,6 @@ export function Header() {
                 </>
               )}
             </div>
-
             {/* Mobile menu button */}
             <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
