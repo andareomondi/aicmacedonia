@@ -8,7 +8,7 @@ import { BackgroundAnimation } from "@/components/background-animation"
 import { AuthGuard } from "@/components/auth-guard"
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 import { Toaster } from "@/components/ui/toaster"
-import { useTheme } from "next-themes"
+import { ThemeProvider } from "next-themes"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,14 +29,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthGuard>
-          <BackgroundAnimation />
-          <Header />
-          {children}
-          <Footer />
-          <PWAInstallPrompt />
-          <Toaster />
-        </AuthGuard>
+        <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+          <AuthGuard>
+            <BackgroundAnimation />
+            <Header />
+            {children}
+            <Footer />
+            <PWAInstallPrompt />
+            <Toaster />
+          </AuthGuard>
+        </ThemeProvider>
       </body>
     </html>
   )
